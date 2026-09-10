@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Can You Outsmart the Machine? — Aptus Gana v5</title>
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<div class="app">
+<header class="hero">
+  <div class="hero-row">
+    <div>
+      <div class="eyebrow">APTUS GANA • ENGINEERING DAY</div>
+      <h1>Can You Outsmart the Machine?</h1>
+      <p>Human vs Algorithm. Don't calculate faster. Think smarter.</p>
+      <div class="machine-status"><span class="dot"></span> Machine online • strategy engine active</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+<h3>Choose your battle</h3>
+<div class="difficulty-legend"><span class="legend easy">EASY · 100</span><span class="legend medium">MEDIUM · 15</span><span class="legend hard">HARD · 20</span></div>
+<div id="menu"></div>
+</aside>
+
+<main class="content">
+<section class="panel" id="panel"></section>
+<section class="leaderboard">
+  <div class="leader-head"><div><h3 style="margin:0">🏆 Machine Breakers</h3><div class="muted" style="font-size:13px">Difficulty-weighted scores: Easy up to 10 • Medium up to 15 • Hard up to 20</div></div><button class="btn secondary" onclick="clearBoard()">Reset</button></div>
+  <div id="board"></div>
+</section>
+</main>
+</div>
+</div>
+
+<div class="math-overlay" id="mathOverlay">
+<div class="math-modal">
+<div class="close-row"><button class="btn secondary" onclick="closeMath()">✕ Close</button></div>
+<div id="mathContent"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
