@@ -119,6 +119,16 @@ input:focus,select:focus{border-color:var(--accent)}
 @media(max-width:800px){.engine-rule-grid,.engine-dashboard{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.engine-rule-grid,.engine-dashboard{grid-template-columns:1fr}.engine-node{flex-basis:38px;height:38px}.engine-move-btn{min-width:65px}}
 
+/* Pattern Duel */
+.pattern-battle-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pattern-level{font-size:11px;font-weight:950;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:#eef2ff;color:#3730a3}.pattern-level.1{background:#dff1ff;color:#155e91}.pattern-level.2{background:#e2f7e8;color:#166534}.pattern-level.3{background:#fff1d8;color:#92400e}.pattern-level.4{background:#ffe3e3;color:#991b1b}
+.pattern-machine{font-size:12px;font-weight:900;padding:8px 12px;border-radius:999px;background:#111827;color:#fff}.pattern-machine span{color:#93c5fd;margin-left:5px}
+.pattern-sequence{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:20px;padding:25px 16px;margin:12px 0 16px;font-size:clamp(18px,3vw,28px);font-weight:900;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+.pattern-sequence span{min-width:46px;text-align:center}.pattern-sequence i{font-style:normal;color:#94a3b8;font-size:18px}.pattern-sequence strong{min-width:50px;height:50px;border-radius:14px;display:grid;place-items:center;background:#172033;color:#fff;border:2px dashed #64748b;animation:patternPulse 1.2s infinite alternate}
+@keyframes patternPulse{from{transform:scale(1);box-shadow:0 0 0 rgba(37,99,235,0)}to{transform:scale(1.05);box-shadow:0 0 0 7px rgba(37,99,235,.08)}}
+.pattern-inputs{display:flex;justify-content:center;align-items:center;gap:10px;margin:12px auto;max-width:600px}.pattern-inputs input{max-width:210px;text-align:center;font-size:22px;font-weight:900;padding:15px}.pattern-inputs span{font-size:24px;color:#94a3b8;font-weight:900}
+.pattern-timer{max-width:600px;margin:14px auto 4px}.pattern-timer>span{font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--muted)}.pattern-timer>b{float:right;font-size:18px}.pattern-timer .progress{clear:both}.pattern-duel-note{text-align:center;color:var(--muted);font-size:13px;margin:12px 0}.pattern-duel-note b{color:var(--ink)}
+
 /* Difficulty system */
 .difficulty-legend{display:flex;flex-wrap:wrap;gap:6px;padding:0 8px 10px}
 .legend{font-size:9px;font-weight:900;letter-spacing:.05em;padding:5px 7px;border-radius:999px}
