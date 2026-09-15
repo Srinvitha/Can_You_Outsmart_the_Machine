@@ -1,7 +1,7 @@
 const GAMES=[
  ['twentyfour','🔢','24 Game','Arithmetic','easy'],['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['grinder','⚙️','Target Grinder','Reverse arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'],
- ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','medium'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','medium'],['inertia','⚡','Inertia Engine','Dynamic strategy','medium'],['decay','🧬','Fibonacci Decay','Move locking','medium'],
- ['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],['wythoff','♜','Wythoff’s Game','Number theory','hard'],
+ ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['wythoff','♜','Wythoff’s Game','Number theory','medium'],
+ ['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','hard'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','hard'],['inertia','⚡','Inertia Engine','Dynamic strategy','hard'],['decay','🧬','Fibonacci Decay','Move locking','hard'],['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],
 ];
 const DIFFICULTY={easy:{label:'EASY',points:10},medium:{label:'MEDIUM',points:15},hard:{label:'HARD',points:20}};
 function gameMeta(){return GAMES.find(g=>g[0]===current)||GAMES[0]}
@@ -12,7 +12,7 @@ let current='nim', score=0, state={};
 const menu=document.getElementById('menu'), panel=document.getElementById('panel');
 GAMES.forEach(([id,ic,name,type,diff])=>{
  const b=document.createElement('button'); b.className='game-btn '+diff; b.dataset.id=id;
- b.innerHTML=`<span class="game-icon">${ic}</span><span><span class="game-name">${name}</span> <span class="diff-badge ${diff}">${DIFFICULTY[diff].label}</span><br><span class="game-type">${type} • up to ${DIFFICULTY[diff].points} pts</span></span>`;
+ b.innerHTML=`<span class="game-icon">${ic}</span><span class="game-copy"><span class="game-title"><span class="game-name">${name}</span><span class="diff-badge ${diff}">${DIFFICULTY[diff].label}</span></span><span class="game-type">${type} • up to ${DIFFICULTY[diff].points} pts</span></span>`;
  b.onclick=()=>{current=id;score=0;start();}; menu.appendChild(b);
 });
 function updateMenu(){document.querySelectorAll('.game-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===current))}
