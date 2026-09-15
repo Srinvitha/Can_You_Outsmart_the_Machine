@@ -5,542 +5,311 @@
   </a>
 </p>
 
-# 🧠 Can You Outsmart the Machine?
+# Can You Outsmart the Machine?
 
 > **Human vs Algorithm. Don't calculate faster. Think smarter.**
 
-**Can You Outsmart the Machine?** is a collection of 16 mathematical, logical, probabilistic, and strategic mini-games where you compete directly against a machine.
+**Can You Outsmart the Machine?** is a collection of **15+ mathematical, logical, probabilistic, and strategic mini-games** where you compete directly against a machine.
 
-The machine doesn't just throw random challenges at you — several games use **search, game theory, dynamic programming, constraint solving, probability, number theory, or exact finite-state analysis**.
+The games challenge you to recognize patterns, reason under constraints, use mathematical strategies, and make better decisions than a computer opponent.
 
-Your goal is simple:
-
-> **Think smarter than the machine.**
+> **Your goal: Think smarter than the machine.**
 
 ---
 
 ## 🎮 The Games
 
-| #  | Game                        | Difficulty  | Core Idea            |
-| -- | --------------------------- | ----------- | -------------------- |
-| 1  | 🔢 **24 Game**              | Easy        | Arithmetic & search  |
-| 2  | 🧩 **Pattern Duel**         | Easy → Hard | Pattern recognition  |
-| 3  | 🔮 **Number Hunt**          | Easy        | Binary search        |
-| 4  | ⛓️ **Operator Network**     | Easy        | Arithmetic reasoning |
-| 5  | ⚙️ **Target Grinder**       | Easy        | Reverse operations   |
-| 6  | 🚪 **Monty Hall**           | Easy        | Probability          |
-| 7  | 🐂 **Bulls & Cows**         | Medium      | Deduction + one lie  |
-| 8  | 🕵️ **Mastermind**          | Medium      | Constraint solving   |
-| 9  | 🥢 **Nim**                  | Medium      | Game theory          |
-| 10 | 🧬 **Symbiotic Feedback**   | Medium      | Adaptive game theory |
-| 11 | ⚖️ **Parity-Shift Wythoff** | Medium      | Positional strategy  |
-| 12 | 🟢 **Inertia Engine**       | Medium      | Dynamic game state   |
-| 13 | 🔒 **Fibonacci Decay**      | Medium      | Move locking         |
-| 14 | 🔵 **Dots & Boxes**         | Hard        | Game-tree strategy   |
-| 15 | 💡 **Lights Out**           | Hard        | Linear algebra       |
-| 16 | ♜ **Wythoff's Game**        | Hard        | Number theory        |
+| # | Game | Difficulty | Core Concept | Points |
+|---|---|---|---|---:|
+| 1 | 🔢 **24 Game** | 🟢 Easy | Arithmetic | +10 |
+| 2 | 🧩 **Pattern Duel** | 🟢 Easy | Pattern Recognition | +10 |
+| 3 | 🔮 **Number Hunt** | 🟢 Easy | Binary Search | +10 |
+| 4 | ⛓️ **Operator Network** | 🟢 Easy | Arithmetic Reasoning | +10 |
+| 5 | ⚙️ **Target Grinder** | 🟢 Easy | Reverse Arithmetic | +10 |
+| 6 | 🚪 **Monty Hall** | 🟢 Easy | Probability | +10 |
+| 7 | 🐂 **Bulls & Cows** | 🟡 Medium | Logic + One Lie | +15 |
+| 8 | 🕵️ **Mastermind** | 🟡 Medium | Deduction | +15 |
+| 9 | 🥢 **Nim** | 🟡 Medium | Game Theory | +15 |
+| 10 | ♜ **Wythoff's Game** | 🟡 Medium | Number Theory | +15 |
+| 11 | 🔵 **Dots & Boxes** | 🟡 Medium | Game Theory | +15 |
+| 12 | 🧬 **Symbiotic Feedback** | 🔴 Hard | Adaptive Game Theory | +20 |
+| 13 | ⚖️ **Parity-Shift Wythoff** | 🔴 Hard | Positional Strategy | +20 |
+| 14 | ⚡ **Inertia Engine** | 🔴 Hard | Dynamic Strategy | +20 |
+| 15 | 🧬 **Fibonacci Decay** | 🔴 Hard | Move Locking | +20 |
+| 16 | 💡 **Lights Out** | 🔴 Hard | Linear Algebra | +20 |
+
 
 ---
 
-# 📖 Rulebook
+# 📖 Rulebook & Game Guide
 
 ## 🟢 EASY
 
-### 1. 🔢 24 Game
+### 🔢 24 Game
+Make exactly **24** using all four given numbers exactly once.
 
-**Objective:** Make exactly **24** using all four given numbers.
+**Rules:** Use `+`, `−`, `×`, and `÷`. Parentheses are allowed.
 
-**Rules**
+**Example:** Given `3, 3, 8, 8`, find an expression that equals `24`.
 
-* Use every given number **exactly once**.
-* Allowed operations:
-
-  * `+`
-  * `−`
-  * `×`
-  * `÷`
-* Parentheses are allowed.
-* You have **60 seconds**.
-
-**Example**
-
-Given:
-
-`3, 3, 8, 8`
-
-Find an expression equal to `24`.
-
-**Think:** Don't calculate randomly. Look for useful intermediate values such as `8 − 3 = 5` or `8 ÷ 4 = 2`.
+**Think:** Look for useful intermediate values rather than trying random combinations.
 
 ---
 
-### 2. 🧩 Pattern Duel
+### 🧩 Pattern Duel
+Predict the **next TWO terms** of a sequence before the machine.
 
-**Objective:** Predict the **next TWO terms** of a sequence before the machine locks in.
+The game contains **5 questions** with increasing difficulty:
 
-This is a five-question duel.
+**Easy → Easy/Medium → Medium → Hard → Hard**
 
-**Difficulty progression**
+Your performance affects how quickly you reach harder questions, but **Q4 and Q5 are guaranteed hard**.
 
-`ROOKIE → THINKER → STRATEGIST → MACHINE MODE`
+Patterns can involve arithmetic, geometric sequences, squares, cubes, Fibonacci-type rules, increasing differences, alternating operations, interleaved sequences, primes, modular patterns, digit-based rules, higher-order differences, and mixed rules.
 
-The difficulty adapts to your performance.
+**Example:**
 
-* Q1 starts easy.
-* Good performance pushes the difficulty upward.
-* Strong players reach harder questions earlier.
-* **Q4 and Q5 are guaranteed hard.**
-* The machine also has its own lock-in time.
-* You must get both predicted terms correct **and** beat the machine's lock time to win the question.
+`2, 6, 12, 20, 30, ?, ?`
 
-**Example**
+Rule: `n(n + 1)`
 
-`2 → 6 → 12 → 20 → 30 → ? → ?`
+Answer: `42, 56`
 
-The rule is:
-
-`n(n + 1)`
-
-So:
-
-`42 → 56`
-
-**Possible pattern types**
-
-* Arithmetic progressions
-* Geometric progressions
-* Squares and cubes
-* Fibonacci-type sequences
-* Increasing/decreasing differences
-* Alternating operations
-* Interleaved sequences
-* Prime-based patterns
-* Modular cycles
-* Digit-based rules
-* Second/third differences
-* Nested and mixed rules
-
-**Think:** Look at differences, ratios, alternating positions, and familiar mathematical structures.
+**Think:** Check differences, ratios, alternating positions, and relationships involving the term position.
 
 ---
 
-### 3. 🔮 Number Hunt
+### 🔮 Number Hunt
+Find the machine's hidden number from **1–100**.
 
-**Objective:** Find the machine's hidden number from **1–100**.
+You have at most **7 guesses**. After each incorrect guess, the machine tells you whether your guess was too high or too low.
 
-**Rules**
-
-* The machine chooses one number from `1–100`.
-* You have at most **7 guesses**.
-* After every incorrect guess, you receive:
-
-  * `Too high`
-  * or `Too low`
-
-**Best strategy:** Binary search.
-
-Instead of guessing randomly:
-
-`1–100 → 50 → smaller range → midpoint → ...`
-
-Seven guesses are enough to guarantee finding any number from 1–100 with optimal play.
+**Best strategy:** Use binary search. Keep choosing the midpoint of the remaining range.
 
 ---
 
-### 4. ⛓️ Operator Network
+### ⛓️ Operator Network
+Reach the displayed target using the available arithmetic operations.
 
-**Objective:** Transform the starting number into the target using the displayed arithmetic operations.
+Each generated puzzle has a valid solution.
 
-**Rules**
-
-* A chain of numbers/operators is provided.
-* Rearrange or choose the available operations according to the puzzle.
-* Reach the exact target.
-* Every generated puzzle has a valid solution.
-
-**Think:** Work backwards from the target when the forward path looks difficult.
+**Think:** If moving forward is difficult, work backwards from the target and ask what operation could have produced it.
 
 ---
 
-### 5. ⚙️ Target Grinder
+### ⚙️ Target Grinder
+Transform the starting value into the target using the available arithmetic operations.
 
-**Objective:** Arrange a set of arithmetic moves to transform a starting value into the target.
+**Think:** Reverse the problem. Instead of asking what to do next, ask:
 
-**Rules**
-
-* You are given a starting value and a collection of operations.
-* Arrange the operations in the correct order.
-* Apply every required operation.
-* Reach the target exactly.
-
-The puzzle is generated backwards from the target, guaranteeing that a valid solution exists.
-
-**Think:** Sometimes the easiest route is to ask:
-
-> "What operation could have produced the target?"
-
-and work backwards.
+> *What could have produced the target?*
 
 ---
 
-### 6. 🚪 Monty Hall
+### 🚪 Monty Hall
+Choose the prize door from **3 doors**.
 
-**Objective:** Choose the door containing the prize.
+1. Pick a door.
+2. The machine reveals another door that it knows is losing.
+3. Choose whether to **Stay** or **Switch**.
 
-There are **3 doors**:
-
-* 🚗 One contains the prize.
-* ❌ Two contain losing outcomes.
-
-**Rules**
-
-1. Pick one door.
-2. The machine opens another door that it knows does **not** contain the prize.
-3. You may:
-
-   * **Stay** with your original door.
-   * **Switch** to the remaining unopened door.
-
-**The mathematics**
-
-Your original choice has:
-
-`1/3` chance of being correct.
-
-The other two doors collectively have:
-
-`2/3` chance.
-
-After the machine reveals a losing door, that `2/3` probability transfers to the remaining unopened door.
+Your original choice has a `1/3` chance of being correct, while the remaining unopened door has a `2/3` chance.
 
 **Best strategy:** Switch.
 
 ---
 
-# 🟡 MEDIUM
+## 🟡 MEDIUM
 
-### 7. 🐂 Bulls & Cows — One Lie
+### 🐂 Bulls & Cows — One Lie
+Crack the machine's hidden **4-digit number** in **15 guesses**.
 
-**Objective:** Crack the machine's hidden **4-digit number**.
+- 🐂 **Bull:** Correct digit + correct position
+- 🐄 **Cow:** Correct digit + wrong position
 
-You have **15 guesses**.
+Exactly **one feedback response is deliberately false**. Every other response is truthful.
 
-**Feedback**
+**Example:**
 
-* 🐂 **Bull** = correct digit **and** correct position.
-* 🐄 **Cow** = correct digit but **wrong position**.
+Secret: `5274`  
+Guess: `5278`  
+Correct feedback: `3 Bulls, 0 Cows`
 
-The machine deliberately gives **exactly ONE false feedback** during the game.
+At the end, the machine can reveal the secret, the exact lie, the false feedback, the mathematically correct feedback, and the complete audit of the other guesses.
 
-Every other feedback is truthful.
-
-**Example**
-
-Secret:
-
-`5274`
-
-Guess:
-
-`5278`
-
-Feedback:
-
-`3 Bulls, 0 Cows`
-
-The `5`, `2`, and `7` are correct and correctly positioned.
-
-**The twist**
-
-One feedback response during your 15 guesses is a lie.
-
-When the game ends, the machine can reveal:
-
-* The secret number
-* The guess where the lie occurred
-* The feedback it gave
-* The mathematically correct feedback
-* Why that feedback was the lie
-
-**Think:** Don't only track the secret. Track whether the entire history of clues remains logically consistent.
+**Think:** Track the consistency of the entire clue history, not just individual guesses.
 
 ---
 
-### 8. 🕵️ Mastermind
+### 🕵️ Mastermind
+Crack the machine's hidden colour code using feedback from your guesses.
 
-**Objective:** Crack the hidden colour code.
+Feedback tells you about:
 
-**Rules**
+- Correct colours in the correct positions
+- Correct colours in the wrong positions
 
-* The machine creates a secret code.
-* Enter your guesses.
-* Feedback tells you how many:
+Every guess creates constraints on the possible code.
 
-  * **Exact matches** exist.
-  * Correct colours exist in the wrong positions.
-* Use the feedback to eliminate impossible codes.
-
-**Think:** Every guess is a constraint. Don't treat guesses independently — combine all previous information.
+**Think:** Combine information from all previous guesses to eliminate impossible codes.
 
 ---
 
-### 9. 🥢 Nim
-
-**Objective:** Take the last stick.
+### 🥢 Nim
+Take the final stick.
 
 **Starting state:** `21 sticks`
 
-**Rules**
+On each turn, take **1, 2, or 3 sticks**. Whoever takes the last stick wins.
 
-* You move first.
-* On each turn, take **1, 2, or 3 sticks**.
-* Whoever takes the final stick wins.
-
-The machine plays optimally.
-
-**The key idea**
-
-The important positions are:
+Important losing positions are multiples of `4`:
 
 `4, 8, 12, 16, 20...`
 
-These are multiples of `4`.
-
-If you can leave a multiple of four after your turn, the opponent is placed in a losing position under perfect play.
-
-**Think:** Don't just count sticks. Look for the invariant.
+**Think:** Try to leave your opponent a multiple of four.
 
 ---
 
-### 10. 🧬 Symbiotic Feedback
+### ♜ Wythoff's Game
+Play with two piles.
 
-**Objective:** Take the final token from two linked piles.
+On each turn you may:
 
-**Starting state**
+1. Remove any positive number from one pile, **or**
+2. Remove the same positive number from both piles.
 
-* Pile A = `8`
-* Pile B = `12`
+The player who takes the final token wins.
 
-**Rules**
-
-* Normally, you may remove **1–3 tokens**.
-* Choose either pile.
-* Your move changes the opponent's maximum move on the **opposite pile**.
-
-If you take `k` from one pile:
-
-`Opposite pile maximum = 4 − k`
-
-**Example**
-
-You take `2` from A.
-
-The next player may take at most:
-
-`4 − 2 = 2`
-
-from B.
-
-**Important:** The restriction applies to the opposite pile, while the pile you just played on resets to a maximum of 3.
-
-**Winning condition:** Take the final token.
-
-**Think:** Your move doesn't just change the pile size. It changes the opponent's future options.
+**Think:** Look for mathematically special losing positions instead of simply reducing the larger pile.
 
 ---
 
-### 11. ⚖️ Parity-Shift Wythoff
+### 🔵 Dots & Boxes
+Claim more boxes than the machine.
 
-**Objective:** Take the last token while obeying the current move-style restriction.
+- Draw one edge per turn.
+- Completing the fourth side of a box claims it.
+- Completing a box gives you **another turn**.
+- The player with the most boxes wins.
 
-This is a strategic variation inspired by Wythoff-style two-pile games.
-
-**Core move types**
-
-* Remove tokens from pile A.
-* Remove tokens from pile B.
-* Remove the same number from both piles.
-
-The twist is that the allowed move style is affected by the previous move.
-
-**Think:** You are managing two things at once:
-
-1. The pile sizes.
-2. Which type of move is available next.
-
-The machine evaluates the game state using exact finite-state search.
+**Think:** A move that does not score immediately may be better if it prevents the machine from gaining a chain of boxes.
 
 ---
 
-### 12. 🟢 Inertia Engine
+## 🔴 HARD
 
-**Objective:** Navigate the track without being forced onto the final Red cell.
+### 🧬 Symbiotic Feedback
+Play a two-pile strategic game where your move affects the opponent's available move size on the **opposite pile**.
 
-**Starting state**
+The machine evaluates future game states rather than simply reacting to the current position.
 
-* Position = `0`
-* Velocity = `3`
+**Think:** Your move changes the opponent's future options. Think about the state you are creating, not just the tokens you remove.
 
-**Rules**
+---
+
+### ⚖️ Parity-Shift Wythoff
+A strategic two-pile game where both the pile sizes and the current move restriction matter.
+
+Possible moves involve removing tokens from one pile or removing an equal number from both piles. The previous move affects the move style available next.
+
+**Think:** Track:
+
+- Both pile sizes
+- The current restriction
+- The move type available to you
+
+The machine evaluates the resulting finite game states.
+
+---
+
+### ⚡ Inertia Engine
+Navigate the board without landing on the final **Red** cell.
+
+**Starting state:**
+
+`Position = 0`  
+`Velocity = 3`
 
 Your next velocity can be:
 
 `v − 1`, `v`, or `v + 1`
 
-while remaining between:
+with velocity restricted to `2–5`.
 
-`2 and 5`
+**Cells:**
 
-So if your current velocity is `3`, your choices are:
+- 🟢 **Green:** Turn passes to the opponent.
+- 🟡 **Yellow:** You move again.
+- 🔴 **Red:** Landing here loses.
 
-`2, 3, 4`
+**Example:**
 
-**Special cells**
+Current velocity `3` → next velocity can be `2, 3, or 4`.
 
-* 🟢 Green → turn passes to the opponent.
-* 🟡 Yellow → **the same player moves again**.
-* 🔴 Red → the final cell; landing there loses.
-
-The chosen velocity becomes your movement amount and becomes the new velocity for the next decision.
-
-**Think:** Position alone is not enough. Your **velocity is part of the game state**.
+**Think:** Position alone is not enough. Consider both **where you are** and **what your current velocity is**.
 
 ---
 
-### 13. 🔒 Fibonacci Decay
+### 🧬 Fibonacci Decay
+Reach a winning state while managing dynamically locked moves.
 
-**Objective:** Reach a winning position without being forced onto Red.
+When you choose a movement step, that exact step becomes **locked for the opponent**.
 
-**Movement**
+**Example:**
 
-Choose a step from:
+You choose `+4` → the opponent cannot choose `+4`.
 
-`2, 3, 4, 5`
+- 🟡 **Yellow:** Preserves your turn while updating the lock.
+- 🔴 **Red:** Losing terminal state.
 
-**The Lock**
-
-After you choose a step, that exact step becomes **locked for the opponent**.
-
-Example:
-
-> You choose `+4`.
-
-The opponent cannot choose `+4`.
-
-**Yellow cells**
-
-Landing on Yellow means:
-
-> **You keep the turn.**
-
-The lock still applies.
-
-**Red**
-
-Landing on the final Red cell means:
-
-> **You lose.**
-
-**Think:** The same position can have completely different strategic value depending on which step is currently locked.
+**Think:** Every move changes both your position and the opponent's future choices.
 
 ---
 
-# 🔴 HARD
+### 💡 Lights Out
+Turn every light **OFF** on a `5 × 5` board.
 
-### 14. 🔵 Dots & Boxes
+Clicking a cell toggles:
 
-**Objective:** Claim more boxes than the machine.
+- The cell itself
+- Up
+- Down
+- Left
+- Right
 
-The board is a small **2×2 Dots & Boxes** grid.
+Only existing neighbouring cells are affected.
 
-**Rules**
-
-* Draw one edge per turn.
-* Completing the fourth side of a box claims it.
-* If you complete a box, you get another turn.
-* The game ends when all boxes are claimed.
-* The player who claims more boxes wins.
-
-**Think:** Sometimes the best move is not the move that scores immediately. Avoid giving the opponent a chain of boxes when possible.
-
-The machine searches possible future game states rather than simply choosing a random edge.
-
----
-
-### 15. 💡 Lights Out
-
-**Objective:** Turn **all lights off**.
-
-**Board:** `5 × 5`
-
-**Rules**
-
-* Clicking a light toggles:
-
-  * itself
-  * the light above
-  * the light below
-  * the light to the left
-  * the light to the right
-* Edge cells only affect neighbours that actually exist.
-* A light can be toggled multiple times.
-
-**Important property**
-
-Toggling the same light twice cancels out:
+Pressing the same cell twice cancels out:
 
 `ON → OFF → ON`
 
-So each switch effectively behaves like a binary variable:
+This creates a natural connection to **binary systems and linear algebra**.
 
-`0 = don't press`
-
-`1 = press`
-
-The machine can search possible first-row configurations to derive a solution.
-
-**Think:** Don't solve each light independently. Think in terms of the entire board state.
+**Think:** Treat the entire board as one mathematical system rather than solving each light independently.
 
 ---
 
-### 16. ♜ Wythoff's Game
+# 🧠 What Are You Actually Testing?
 
-**Objective:** Take the last token from two piles.
+| Game | Core Skill |
+|---|---|
+| 🔢 24 Game | Arithmetic Search |
+| 🧩 Pattern Duel | Pattern Recognition |
+| 🔮 Number Hunt | Binary Search |
+| ⛓️ Operator Network | Arithmetic Reasoning |
+| ⚙️ Target Grinder | Reverse Reasoning |
+| 🚪 Monty Hall | Conditional Probability |
+| 🐂 Bulls & Cows | Logical Deduction |
+| 🕵️ Mastermind | Constraint Solving |
+| 🥢 Nim | Invariants & Game Theory |
+| ♜ Wythoff's Game | Number Theory |
+| 🔵 Dots & Boxes | Game-Tree Strategy |
+| 🧬 Symbiotic Feedback | State-Space Reasoning |
+| ⚖️ Parity-Shift Wythoff | Positional Strategy |
+| ⚡ Inertia Engine | Dynamic State Reasoning |
+| 🧬 Fibonacci Decay | State + Move Constraints |
+| 💡 Lights Out | Linear Algebra |
 
-**Rules**
-
-On each turn you may:
-
-1. Remove any positive number from **one pile**, or
-2. Remove the **same positive number from both piles**.
-
-The player who takes the final token wins.
-
-**Mathematical strategy**
-
-Sort the piles:
-
-`a ≤ b`
-
-Let:
-
-`k = b − a`
-
-A classic losing position occurs when:
-
-`a = floor(kφ)`
-
-where:
-
-`φ = (1 + √5) / 2 ≈ 1.618`
-
-Some losing positions are:
-
-`(0,0), (1,2), (2,4), (3,5), (4,7), (5,8)...`
-
-**Think:** The machine is looking for these mathematically special positions.
-
----
 
 # 🏆 Machine Breakers
 
