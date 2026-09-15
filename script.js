@@ -1,5 +1,5 @@
 const GAMES=[
- ['twentyfour','🔢','24 Game','Arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'], ['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['target','🎯','Target Number','Optimization','easy'],['countdown','⏱️','Countdown Numbers','Search','easy'],
+ ['twentyfour','🔢','24 Game','Arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'], ['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['countdown','⏱️','Countdown Numbers','Search','easy'],
  ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['optimal','♟️','Optimal Move','Minimax','medium'],['greenred','🟢','Green–Yellow–Red','Strategy','medium'],
  ['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],['wythoff','♜','Wythoff’s Game','Number theory','hard'],
 ];
@@ -391,30 +391,41 @@ function dotsMath(){math('Dots & Boxes is a game-tree problem','The tiny 2×2 ve
 'This is minimax-style reasoning: assume the opponent also chooses moves that are best for them.'
 ],'In strategic games, a move can be bad now but excellent if it changes the structure of future moves.')}
 
-/* TARGET NUMBER */
-const targetSets=[{n:[3,7,8,10],t:73},{n:[4,9,25,50],t:91},{n:[2,5,11,20],t:63},{n:[6,8,9,12],t:48}];
-function startTarget(){state={q:targetSets[Math.floor(Math.random()*targetSets.length)],over:false};
- header('🎯 Target Number','Use +, −, ×, ÷ and each number at most once. Get exactly the target before the machine does.',
- `<div class="cards">${state.q.n.map(n=>`<div class="card-num">${n}</div>`).join('')}<div class="card-num" style="background:#eff6ff">→ ${state.q.t}</div></div>
- <input id="targetExpr" type="text" placeholder="Your expression">
- ${btns([B('CHECK','checkTarget'),B('💡 Show the machine solution','targetMath','secondary'),B('↻ New challenge','startTarget','secondary')])}<div id="msg" class="notice">You may leave numbers unused, but cannot reuse a number.</div>`);
-}
-function checkTarget(){if(state.over)return;const e=document.getElementById('targetExpr').value.trim();if(!e)return;if(!/^[0-9+\-*/().\s×÷−]+$/.test(e)){notice('Invalid expression.','warn');return}
- const used=(e.match(/\d+/g)||[]).map(Number), avail=[...state.q.n];for(const x of used){const i=avail.indexOf(x);if(i<0){notice(`You used ${x} too many times or it is not provided.`,'warn');return}avail.splice(i,1)}
- try{const v=Function('"use strict";return('+e.replaceAll('×','*').replaceAll('÷','/').replaceAll('−','-')+')')();if(Math.abs(v-state.q.t)<1e-9){state.over=true;notice(`🏆 <b>Exactly ${state.q.t}!</b>`,'good');saveWin('You hit the Target Number',1)}else notice(`You got <b>${v}</b>. Target = ${state.q.t}.`,'bad')}catch{notice('Could not evaluate that expression.','bad')}
-}
-function targetSolution(q){return solveTarget(q.n,q.t)}
+/* OPERATOR NETWORK */
+const OPERATOR_SYMBOLS=['+','−','×','÷'];
+let operatorPuzzle={start:0,nums:[],target:0,solution:[],ops:[]};
+let operatorSolved=0;
+let operatorScoreRecorded=false;
+function operatorRandomInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function evaluateOperator(start,nums,ops){let value=start;const steps=[String(start)];for(let i=0;i<nums.length;i++){const n=nums[i],op=ops[i];if(op==='+')value+=n;else if(op==='−')value-=n;else if(op==='×')value*=n;else if(op==='÷'){if(n===0||value%n!==0)return {result:null,steps};value/=n}steps.push(`${op} ${n} = ${value}`)}return {result:value,steps}}
+function generateOperatorPuzzle(){let found=null;const minStart=2+Math.min(operatorSolved,8),maxStart=9+Math.min(Math.floor(operatorSolved/2),8);for(let attempt=0;attempt<3000;attempt++){const start=operatorRandomInt(minStart,maxStart),nums=Array.from({length:4},()=>operatorRandomInt(2,10)),solution=Array.from({length:4},()=>OPERATOR_SYMBOLS[operatorRandomInt(0,3)]),evaluation=evaluateOperator(start,nums,solution);if(evaluation.result!==null&&evaluation.result>0&&evaluation.result<400&&evaluation.result!==start){found={start,nums,target:evaluation.result,solution};break}}if(!found)found={start:5,nums:[3,4,2,6],target:36,solution:['+','×','−','+']};operatorPuzzle={...found,ops:Array(4).fill('+')}}
+function startOperatorNetwork(){if(state.tick)clearInterval(state.tick);state={over:false,tick:null,operatorTime:60};operatorSolved=0;operatorScoreRecorded=false;score=0;generateOperatorPuzzle();header('⛓️ Operator Network','Toggle the operators to transform the starting number into the target. Solve as many pipelines as you can in 60 seconds.',`<div class="operator-dashboard"><div class="operator-stat">🏆 Round Score <b id="operatorScore">0</b></div><div class="operator-stat operator-timer" id="operatorTimerCard">⏱️ Time <b id="operatorTime">60s</b></div></div><div class="network-pipeline" id="operatorPipeline"></div><div class="telemetry-readout" id="operatorTelemetry">Pipeline: Loading execution map...</div>${btns([B('💡 Show solution','operatorRevealSolution','secondary'),B('🧠 Show the math','operatorMath','secondary'),B('↻ New round','startOperatorNetwork','secondary')])}<div id="msg" class="notice">Click an operator to cycle: + → − → × → ÷. Each solved pipeline earns 2 points.</div>`);renderOperatorPipeline();runOperatorClock()}
+function runOperatorClock(){if(state.tick)clearInterval(state.tick);state.tick=setInterval(()=>{if(state.over)return;state.operatorTime--;const t=document.getElementById('operatorTime'),card=document.getElementById('operatorTimerCard');if(t)t.textContent=state.operatorTime+'s';if(card&&state.operatorTime<=15)card.classList.add('warn');if(state.operatorTime<=0){clearInterval(state.tick);state.over=true;finishOperatorRound()}},1000)}
+function finishOperatorRound(){if(operatorScoreRecorded)return;operatorScoreRecorded=true;notice(`⏰ <b>TIME!</b> You solved ${operatorSolved} pipeline${operatorSolved===1?'':'s'} and scored <b>${score}</b> points.`,'warn');if(score<=0)return;let name='Player';try{const entered=window.prompt(`🏆 Operator Network round complete!\nFinal score: ${score}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}try{let board=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]');board.push({name,score,game:'Operator Network',difficulty:'EASY',time:Date.now()});board.sort((a,b)=>b.score-a.score);localStorage.setItem('aptusMachineBoard',JSON.stringify(board.slice(0,10)))}catch(e){}renderBoard()}
+function cycleOperator(index){if(state.over)return;const currentIndex=OPERATOR_SYMBOLS.indexOf(operatorPuzzle.ops[index]);operatorPuzzle.ops[index]=OPERATOR_SYMBOLS[(currentIndex+1)%OPERATOR_SYMBOLS.length];renderOperatorPipeline()}
+function renderOperatorPipeline(){const wrapper=document.getElementById('operatorPipeline');if(!wrapper)return;wrapper.innerHTML='';const startNode=document.createElement('div');startNode.className='node start';startNode.textContent=operatorPuzzle.start;wrapper.appendChild(startNode);operatorPuzzle.nums.forEach((n,i)=>{const valve=document.createElement('div');valve.className='pipe-valve';const button=document.createElement('button');button.className='btn-operator';button.textContent=operatorPuzzle.ops[i];button.disabled=state.over;button.title='Click to change operator';button.onclick=()=>cycleOperator(i);valve.appendChild(button);wrapper.appendChild(valve);const numberNode=document.createElement('div');numberNode.className='node';numberNode.textContent=n;wrapper.appendChild(numberNode);if(i<operatorPuzzle.nums.length-1){const arrow=document.createElement('div');arrow.className='operator-arrow';arrow.textContent='➜';wrapper.appendChild(arrow)}});const arrow=document.createElement('div');arrow.className='operator-arrow';arrow.textContent='➜';wrapper.appendChild(arrow);const target=document.createElement('div');target.className='node target';target.textContent=`Goal: ${operatorPuzzle.target}`;wrapper.appendChild(target);const evaluation=evaluateOperator(operatorPuzzle.start,operatorPuzzle.nums,operatorPuzzle.ops),telemetry=document.getElementById('operatorTelemetry');if(telemetry)telemetry.innerHTML=evaluation.result===null?'Flow Log: <span class="operator-error">Fractional division — pipeline rejected.</span>':`Flow Log: <span>${esc(evaluation.steps.join(' → '))}</span> <b>Current: ${evaluation.result}</b>`;if(evaluation.result===operatorPuzzle.target&&!state.over){state.over=true;if(state.tick)clearInterval(state.tick);operatorSolved++;score=Math.min(difficultyPoints(),score+2);setScore(score);const roundScore=document.getElementById('operatorScore');if(roundScore)roundScore.textContent=score;notice(score>=difficultyPoints()?`🏆 <b>EASY ROUND COMPLETE!</b> You reached ${difficultyPoints()} points.`:`🏆 <b>Pipeline solved!</b> +2 points. ${difficultyPoints()-score} points remaining.`,'good');setTimeout(()=>{if(score>=difficultyPoints()){finishOperatorRound();return}state.over=false;generateOperatorPuzzle();renderOperatorPipeline()},700)}}
+function operatorRevealSolution(){if(state.over)return;operatorPuzzle.ops=[...operatorPuzzle.solution];renderOperatorPipeline();notice('💡 The machine has set the operators to one valid solution.')}
+function operatorMath(){math('Operator Network = sequential computation','Unlike ordinary expression puzzles, this pipeline executes from left to right. Every operator changes the value passed to the next stage.',[`<div class="formula">${operatorPuzzle.start} ${operatorPuzzle.solution.map((op,i)=>`${op} ${operatorPuzzle.nums[i]}`).join(' ')}</div>`,'Each valve controls one operation. Changing an early valve changes every later intermediate value.','Division is accepted only when it produces a whole number, preventing fractional pipeline states.','The starting-number range increases slightly as you solve more pipelines in the same round.'],'Watch the intermediate values. The fastest solution is usually to reason about what value you need at the final stages, then work backwards.')}
+
 function solveTarget(nums,target){
- function rec(vals,exps){if(vals.length===1)return Math.abs(vals[0]-target)<1e-9?exps[0]:null;
-  for(let i=0;i<vals.length;i++)for(let j=i+1;j<vals.length;j++){const rest=vals.filter((_,k)=>k!==i&&k!==j),er=exps.filter((_,k)=>k!==i&&k!==j),a=vals[i],b=vals[j],ea=exps[i],eb=exps[j];
-   const ops=[[a+b,`(${ea}+${eb})`],[a*b,`(${ea}×${eb})`],[a-b,`(${ea}−${eb})`],[b-a,`(${eb}−${ea})`]];if(b)ops.push([a/b,`(${ea}÷${eb})`]);if(a)ops.push([b/a,`(${eb}÷${ea})`]);
-   for(const [v,e] of ops){const r=rec([...rest,v],[...er,e]);if(r)return r}}
-  // allow unused numbers by starting with any subset
-  return null}
- for(let mask=1;mask<(1<<nums.length);mask++){let v=[],e=[];for(let i=0;i<nums.length;i++)if(mask&(1<<i)){v.push(nums[i]);e.push(String(nums[i]))}const r=rec(v,e);if(r)return r}
- return null
+ function rec(vals,exps){
+  if(vals.length===1)return Math.abs(vals[0]-target)<1e-9?exps[0]:null;
+  for(let i=0;i<vals.length;i++)for(let j=i+1;j<vals.length;j++){
+   const rest=vals.filter((_,k)=>k!==i&&k!==j),er=exps.filter((_,k)=>k!==i&&k!==j),a=vals[i],b=vals[j],ea=exps[i],eb=exps[j];
+   const ops=[[a+b,`(${ea}+${eb})`],[a*b,`(${ea}×${eb})`],[a-b,`(${ea}−${eb})`],[b-a,`(${eb}−${ea})`]];
+   if(Math.abs(b)>1e-12)ops.push([a/b,`(${ea}÷${eb})`]);
+   if(Math.abs(a)>1e-12)ops.push([b/a,`(${eb}÷${ea})`]);
+   for(const [value,expression] of ops){const result=rec([...rest,value],[...er,expression]);if(result)return result}
+  }
+  return null;
+ }
+ for(let mask=1;mask<(1<<nums.length);mask++){
+  const values=[],expressions=[];
+  for(let i=0;i<nums.length;i++)if(mask&(1<<i)){values.push(nums[i]);expressions.push(String(nums[i]))}
+  const result=rec(values,expressions);if(result)return result;
+ }
+ return null;
 }
-function targetMath(){const s=targetSolution(state.q);math('Target Number = search + optimization','The machine can systematically search arithmetic expression trees.',[`Numbers: <b>${state.q.n.join(', ')}</b> → target <b>${state.q.t}</b>.`,`One exact solution: <div class="formula">${s||'No exact solution found for this set.'}</div>`,'A search engine combines two available values with each legal operation, then recursively combines the results.','To keep the game fair, a human solution may use each supplied number at most once.'],'Instead of trying random arithmetic, work backwards from the target and look for useful factors or differences.')}
 
 /* BULLS */
 function rand4(){return String(Math.floor(1000+Math.random()*9000)).split('').map(Number)}
@@ -533,5 +544,5 @@ function greenMath(){const memo=new Map();const winning=greenStateWin(15,'human'
 ],'This is the same core idea used by many optimal-game algorithms: solve the states from the end backwards instead of relying on intuition.')}
 
 /* start */
-function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,optimal:startOptimal,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,target:startTarget,bulls:startBulls,wythoff:startWythoff,countdown:startCountdown,greenred:startGreen};map[current]();setScore(0)}
+function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,optimal:startOptimal,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,operator:startOperatorNetwork,bulls:startBulls,wythoff:startWythoff,countdown:startCountdown,greenred:startGreen};map[current]();setScore(0)}
 renderBoard();start();
