@@ -27,7 +27,7 @@ function notice(text,cls=''){const n=document.getElementById('msg');if(n){n.clas
 function btns(arr){return `<div class="actions">${arr.join('')}</div>`}
 function B(text,fn,cls=''){return `<button type="button" class="btn ${cls}" onclick="${fn}()">${text}</button>`}
 function math(title,subtitle,steps,tip){
- document.getElementById('mathContent').innerHTML=`<h2>🧠 ${title}</h2><p class="muted">${subtitle}</p>${steps.map((s,i)=>`<div class="math-step"><div class="step-num">${i+1}</div><div>${s}</div></div>`).join('')}<div class="notice good"><b>Takeaway:</b> ${tip}</div>`;
+ document.getElementById('mathContent').innerHTML=`<div class="math-kicker">🧠 THE MATH</div><h2>${title}</h2><p class="math-subtitle">${subtitle}</p><div class="math-steps">${steps.map((s,i)=>`<div class="math-step"><div class="step-label">STEP ${String(i+1).padStart(2,'0')}</div><div class="math-step-copy">${s}</div></div>`).join('')}</div><div class="math-insight"><span>MATHEMATICAL INSIGHT</span><div>${tip}</div></div><div class="math-takeaway"><b>💡 KEY IDEA</b><p>${tip}</p></div>`;
  document.getElementById('mathOverlay').style.display='flex';
 }
 function closeMath(){document.getElementById('mathOverlay').style.display='none'}
@@ -57,7 +57,9 @@ function renderBoard(){
  const el=document.getElementById('board');
  let a=[];
  try{a=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]')}catch(e){a=[]}
- el.innerHTML=a.length?a.map((x,i)=>`<div class="leader-row"><span><span class="rank">${i+1}.</span> ${esc(x.name)} <span class="pill">${esc(x.game)}</span> <span class="difficulty-badge ${String(x.difficulty||'').toLowerCase()}">${esc(x.difficulty||'')}</span></span><b>${x.score}</b></div>`).join(''):'<div class="empty">No Machine Breakers yet. Be the first.</div>';
+ const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+ const count=document.getElementById('breakerCount');if(count)count.textContent=a.filter(x=>Number(x.time)>=start).length;
+ el.innerHTML=a.length?a.map((x,i)=>`<div class="leader-row rank-${Math.min(i+1,4)}"><span><span class="rank">${String(i+1).padStart(2,'0')}</span> ${esc(x.name)} <span class="pill">${esc(x.game)}</span> <span class="difficulty-badge ${String(x.difficulty||'').toLowerCase()}">${esc(x.difficulty||'')}</span></span><b>${x.score}</b></div>`).join(''):'<div class="empty">No local breakers yet. Be the first.</div>';
 }
 function clearBoard(){try{localStorage.removeItem('aptusMachineBoard')}catch(e){}renderBoard()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}

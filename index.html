@@ -30,8 +30,15 @@
 <main class="content">
 <section class="panel" id="panel"></section>
 <section class="leaderboard">
-  <div class="leader-head"><div><h3 style="margin:0">🏆 Machine Breakers</h3><div class="muted" style="font-size:13px">Difficulty-weighted scores: Easy up to 10 • Medium up to 15 • Hard up to 20</div></div><button class="btn secondary" onclick="clearBoard()">Reset</button></div>
-  <div id="board"></div>
+  <div class="leader-head">
+    <div class="leader-title">
+      <div class="leader-kicker">TODAY'S HALL OF FAME</div>
+      <h3>🏆 Machine Breakers</h3>
+      <div class="leader-sub"><strong id="breakerCount">0</strong> humans have broken the machine today</div>
+    </div>
+    <button class="btn secondary board-reset" onclick="clearBoard()">Reset</button>
+  </div>
+  <div id="board" class="board-list"></div>
 </section>
 </main>
 </div>
