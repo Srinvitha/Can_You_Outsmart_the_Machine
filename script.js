@@ -32,41 +32,53 @@ function math(title,subtitle,steps,tip){
 }
 function closeMath(){document.getElementById('mathOverlay').style.display='none'}
 function toast(t){const x=document.getElementById('toast');x.textContent=t;x.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>x.style.display='none',2200)}
+function loadLeaderboard(){
+ let stored=[];
+ try{stored=JSON.parse(sessionStorage.getItem('aptusMachineBoard')||'[]')}catch(e){}
+ const players=[];
+ stored.forEach(entry=>{
+  if(entry.key&&Number.isFinite(entry.totalScore)){players.push(entry);return}
+  const name=String(entry.name||'Player').trim().slice(0,22),key=name.toLowerCase();
+  let player=players.find(x=>x.key===key);
+  if(!player){player={key,name,totalScore:0,wins:0,games:[],firstPlayed:entry.time||Date.now()};players.push(player)}
+  player.totalScore+=Number(entry.score)||0;player.wins++;player.games.push({game:entry.game||'Unknown game',difficulty:entry.difficulty||'EASY',points:Number(entry.score)||0});
+ });
+ return players;
+}
+function recordLeaderboardWin(name,points,game,difficulty){
+ const key=name.trim().toLowerCase();
+ if(!key)return;
+ const players=loadLeaderboard();
+ let player=players.find(x=>x.key===key);
+ if(!player){player={key,name:name.trim().slice(0,22),totalScore:0,wins:0,games:[],firstPlayed:Date.now()};players.push(player)}
+ player.totalScore+=points;player.wins++;player.games.push({game,difficulty,points});
+ sessionStorage.setItem('aptusMachineDailyWins',String(Number(sessionStorage.getItem('aptusMachineDailyWins')||0)+1));
+ players.sort((a,b)=>b.totalScore-a.totalScore||b.wins-a.wins||a.firstPlayed-b.firstPlayed);
+ sessionStorage.setItem('aptusMachineBoard',JSON.stringify(players));
+}
 function saveWin(label,multiplier=1){
  // One round has one score. Difficulty only nudges the maximum upward:
  // Easy 10, Medium 15, Hard 20. There is no large base-point bonus.
  const points=Math.max(1,Math.min(difficultyPoints(),Math.round(difficultyPoints()*multiplier)));
  setScore(points);
- // Gameplay must never break because browser storage or a prompt is unavailable.
- let name='Player';
  try{
-   const entered=window.prompt(`🏆 ${label}!\n+${points} points\nEnter your name for the Machine Breakers board:`);
-   if(entered!==null && entered.trim()) name=entered.trim().slice(0,22);
+   let name='Player';
+   try{
+    const entered=window.prompt(`🏆 ${label}!\n+${points} points\nEnter your name for the Machine Breakers board:`);
+    if(entered!==null && entered.trim())name=entered.trim().slice(0,22);
+   }catch(e){ /* prompts may be blocked in some browser contexts */ }
+  recordLeaderboardWin(name,points,GAMES.find(g=>g[0]===current)[2],difficultyInfo().label);
  }catch(e){ /* prompts may be blocked in some browser contexts */ }
- try{
-   let a=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]');
-   a.push({name,score,game:GAMES.find(g=>g[0]===current)[2],difficulty:difficultyInfo().label,time:Date.now()});
-  const dayKey=new Date().toLocaleDateString('en-CA');
-  const daily=JSON.parse(localStorage.getItem('aptusMachineDailyWins')||'{}');
-  daily[dayKey]=(daily[dayKey]||0)+1;
-  localStorage.setItem('aptusMachineDailyWins',JSON.stringify(daily));
-   a.sort((a,b)=>b.score-a.score);a=a.slice(0,10);
-   localStorage.setItem('aptusMachineBoard',JSON.stringify(a));
- }catch(e){
-   // File:// and privacy-restricted browsers can disable localStorage.
- }
  renderBoard();
 }
 function renderBoard(){
  const el=document.getElementById('board');
- let a=[];
- try{a=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]')}catch(e){a=[]}
- const dayKey=new Date().toLocaleDateString('en-CA');
- let daily={};try{daily=JSON.parse(localStorage.getItem('aptusMachineDailyWins')||'{}')}catch(e){}
- const count=document.getElementById('breakerCount');if(count)count.textContent=Number(daily[dayKey]||0);
- el.innerHTML=a.length?a.map((x,i)=>`<div class="leader-row rank-${Math.min(i+1,4)}"><span><span class="rank">${String(i+1).padStart(2,'0')}</span> ${esc(x.name)} <span class="pill">${esc(x.game)}</span> <span class="difficulty-badge ${String(x.difficulty||'').toLowerCase()}">${esc(x.difficulty||'')}</span></span><b>${x.score}</b></div>`).join(''):'<div class="empty">No local breakers yet. Be the first.</div>';
+ const a=loadLeaderboard();
+ try{sessionStorage.setItem('aptusMachineBoard',JSON.stringify(a))}catch(e){}
+ const count=document.getElementById('breakerCount');if(count)count.textContent=Number(sessionStorage.getItem('aptusMachineDailyWins')||0);
+ el.innerHTML=a.length?a.map((x,i)=>`<div class="leader-row rank-${Math.min(i+1,4)}"><span><span class="rank">${String(i+1).padStart(2,'0')}</span> ${esc(x.name)} <span class="pill">${x.wins} machine break${x.wins===1?'':'s'}</span><small>${x.games.map(g=>`${esc(g.game)} +${g.points}`).join(' • ')}</small></span><b>${x.totalScore}</b></div>`).join(''):'<div class="empty">No local breakers yet. Be the first.</div>';
 }
-function clearBoard(){try{localStorage.removeItem('aptusMachineBoard');localStorage.removeItem('aptusMachineDailyWins')}catch(e){}renderBoard()}
+function clearBoard(){try{sessionStorage.removeItem('aptusMachineBoard');sessionStorage.removeItem('aptusMachineDailyWins')}catch(e){}renderBoard()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 
 /* NIM */
@@ -422,7 +434,7 @@ function evaluateOperator(start,nums,ops){let value=start;const steps=[String(st
 function generateOperatorPuzzle(){let found=null;const minStart=2+Math.min(operatorSolved,8),maxStart=9+Math.min(Math.floor(operatorSolved/2),8);for(let attempt=0;attempt<3000;attempt++){const start=operatorRandomInt(minStart,maxStart),nums=Array.from({length:4},()=>operatorRandomInt(2,10)),solution=Array.from({length:4},()=>OPERATOR_SYMBOLS[operatorRandomInt(0,3)]),evaluation=evaluateOperator(start,nums,solution);if(evaluation.result!==null&&evaluation.result>0&&evaluation.result<400&&evaluation.result!==start){found={start,nums,target:evaluation.result,solution};break}}if(!found)found={start:5,nums:[3,4,2,6],target:36,solution:['+','×','−','+']};operatorPuzzle={...found,ops:Array(4).fill('+')}}
 function startOperatorNetwork(){if(state.tick)clearInterval(state.tick);state={over:false,tick:null,operatorTime:60};operatorSolved=0;operatorScoreRecorded=false;score=0;generateOperatorPuzzle();header('⛓️ Operator Network','Toggle the operators to transform the starting number into the target. Solve as many pipelines as you can in 60 seconds.',`<div class="operator-dashboard"><div class="operator-stat">🏆 Round Score <b id="operatorScore">0</b></div><div class="operator-stat operator-timer" id="operatorTimerCard">⏱️ Time <b id="operatorTime">60s</b></div></div><div class="network-pipeline" id="operatorPipeline"></div><div class="telemetry-readout" id="operatorTelemetry">Pipeline: Loading execution map...</div>${btns([B('💡 Show solution','operatorRevealSolution','secondary'),B('🧠 Show the math','operatorMath','secondary'),B('↻ New round','startOperatorNetwork','secondary')])}<div id="msg" class="notice">Click an operator to cycle: + → − → × → ÷. Each solved pipeline earns 2 points.</div>`);renderOperatorPipeline();runOperatorClock()}
 function runOperatorClock(){if(state.tick)clearInterval(state.tick);state.tick=setInterval(()=>{if(state.over)return;state.operatorTime--;const t=document.getElementById('operatorTime'),card=document.getElementById('operatorTimerCard');if(t)t.textContent=state.operatorTime+'s';if(card&&state.operatorTime<=15)card.classList.add('warn');if(state.operatorTime<=0){clearInterval(state.tick);state.over=true;finishOperatorRound()}},1000)}
-function finishOperatorRound(){if(operatorScoreRecorded)return;operatorScoreRecorded=true;notice(`⏰ <b>TIME!</b> You solved ${operatorSolved} pipeline${operatorSolved===1?'':'s'} and scored <b>${score}</b> points.`,'warn');if(score<=0)return;let name='Player';try{const entered=window.prompt(`🏆 Operator Network round complete!\nFinal score: ${score}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}try{let board=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]');board.push({name,score,game:'Operator Network',difficulty:'EASY',time:Date.now()});board.sort((a,b)=>b.score-a.score);localStorage.setItem('aptusMachineBoard',JSON.stringify(board.slice(0,10)))}catch(e){}renderBoard()}
+function finishOperatorRound(){if(operatorScoreRecorded)return;operatorScoreRecorded=true;notice(`⏰ <b>TIME!</b> You solved ${operatorSolved} pipeline${operatorSolved===1?'':'s'} and scored <b>${score}</b> points.`,'warn');if(score<=0)return;let name='Player';try{const entered=window.prompt(`🏆 Operator Network round complete!\nFinal score: ${score}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}try{recordLeaderboardWin(name,score,'Operator Network','EASY')}catch(e){}renderBoard()}
 function cycleOperator(index){if(state.over)return;const currentIndex=OPERATOR_SYMBOLS.indexOf(operatorPuzzle.ops[index]);operatorPuzzle.ops[index]=OPERATOR_SYMBOLS[(currentIndex+1)%OPERATOR_SYMBOLS.length];renderOperatorPipeline()}
 function renderOperatorPipeline(){const wrapper=document.getElementById('operatorPipeline');if(!wrapper)return;wrapper.innerHTML='';const startNode=document.createElement('div');startNode.className='node start';startNode.textContent=operatorPuzzle.start;wrapper.appendChild(startNode);operatorPuzzle.nums.forEach((n,i)=>{const valve=document.createElement('div');valve.className='pipe-valve';const button=document.createElement('button');button.className='btn-operator';button.textContent=operatorPuzzle.ops[i];button.disabled=state.over;button.title='Click to change operator';button.onclick=()=>cycleOperator(i);valve.appendChild(button);wrapper.appendChild(valve);const numberNode=document.createElement('div');numberNode.className='node';numberNode.textContent=n;wrapper.appendChild(numberNode);if(i<operatorPuzzle.nums.length-1){const arrow=document.createElement('div');arrow.className='operator-arrow';arrow.textContent='➜';wrapper.appendChild(arrow)}});const arrow=document.createElement('div');arrow.className='operator-arrow';arrow.textContent='➜';wrapper.appendChild(arrow);const target=document.createElement('div');target.className='node target';target.textContent=`Goal: ${operatorPuzzle.target}`;wrapper.appendChild(target);const evaluation=evaluateOperator(operatorPuzzle.start,operatorPuzzle.nums,operatorPuzzle.ops),telemetry=document.getElementById('operatorTelemetry');if(telemetry)telemetry.innerHTML=evaluation.result===null?'Flow Log: <span class="operator-error">Fractional division — pipeline rejected.</span>':`Flow Log: <span>${esc(evaluation.steps.join(' → '))}</span> <b>Current: ${evaluation.result}</b>`;if(evaluation.result===operatorPuzzle.target&&!state.over){state.over=true;if(state.tick)clearInterval(state.tick);operatorSolved++;score=Math.min(difficultyPoints(),score+2);setScore(score);const roundScore=document.getElementById('operatorScore');if(roundScore)roundScore.textContent=score;notice(score>=difficultyPoints()?`🏆 <b>EASY ROUND COMPLETE!</b> You reached ${difficultyPoints()} points.`:`🏆 <b>Pipeline solved!</b> +2 points. ${difficultyPoints()-score} points remaining.`,'good');setTimeout(()=>{if(score>=difficultyPoints()){finishOperatorRound();return}state.over=false;generateOperatorPuzzle();renderOperatorPipeline()},700)}}
 function operatorRevealSolution(){if(state.over)return;operatorPuzzle.ops=[...operatorPuzzle.solution];renderOperatorPipeline();notice('💡 The machine has set the operators to one valid solution.')}
@@ -563,7 +575,7 @@ function renderGrinder(updateValue=true,currentValue=null){
 }
 function grinderReveal(){if(state.over)return;const sequence=grinderPuzzle.solutionOrder.map(index=>grinderPuzzle.slots[index].label).join(' → ');notice(`💡 <b>Machine solution:</b> ${sequence}`)}
 function grinderMath(){const solution=grinderPuzzle.solutionOrder.map(index=>grinderPuzzle.slots[index]);let value=grinderPuzzle.initial;const steps=[String(value)];for(const op of solution){if(op.type==='DIV')value/=op.value;else if(op.type==='SUB')value-=op.value;else value+=op.value;steps.push(`${op.label} = ${value}`)}math('Target Grinder = reverse arithmetic','The puzzle is generated backwards from 1, which guarantees that one ordering reaches the destination exactly.',[`Starting target: <b>${grinderPuzzle.initial}</b>`,'Use all four modules exactly once.',`Correct execution path: <div class="formula">${steps.join(' → ')}</div>`,'Division is legal only when the current value is divisible by the module value.','The challenge is finding the correct order of transformations.'],'Think backwards: ask what operation could have produced the current value, then choose the module that makes the next step clean.')}
-function finishGrinderRound(){if(state.tick)clearInterval(state.tick);const finalScore=score;let name='Player';try{const entered=window.prompt(`🏆 Target Grinder round complete!\nFinal score: ${finalScore}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}let board=[];try{board=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]')}catch(e){}board.push({name,score:finalScore,game:'Target Grinder',difficulty:'EASY',time:Date.now()});board.sort((a,b)=>b.score-a.score);try{localStorage.setItem('aptusMachineBoard',JSON.stringify(board.slice(0,10)))}catch(e){}renderBoard();notice(`🏆 <b>Round complete!</b> Final score: ${finalScore}.`,'good')}
+function finishGrinderRound(){if(state.tick)clearInterval(state.tick);const finalScore=score;let name='Player';try{const entered=window.prompt(`🏆 Target Grinder round complete!\nFinal score: ${finalScore}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}try{recordLeaderboardWin(name,finalScore,'Target Grinder','EASY')}catch(e){}renderBoard();notice(`🏆 <b>Round complete!</b> Final score: ${finalScore}.`,'good')}
 
 /* INERTIA ENGINE */
 const INERTIA_TOTAL=31,INERTIA_MIN=2,INERTIA_MAX=5,INERTIA_YELLOW=new Set([7,14,21]);
