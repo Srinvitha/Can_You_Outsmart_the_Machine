@@ -1,7 +1,7 @@
 const GAMES=[
  ['twentyfour','🔢','24 Game','Arithmetic','easy'],['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['grinder','⚙️','Target Grinder','Reverse arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'],
- ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['wythoff','♜','Wythoff’s Game','Number theory','medium'],
- ['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','hard'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','hard'],['inertia','⚡','Inertia Engine','Dynamic strategy','hard'],['decay','🧬','Fibonacci Decay','Move locking','hard'],['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],
+ ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['wythoff','♜','Wythoff’s Game','Number theory','medium'],['dots','🔵','Dots & Boxes','Game theory','medium'],
+ ['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','hard'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','hard'],['inertia','⚡','Inertia Engine','Dynamic strategy','hard'],['decay','🧬','Fibonacci Decay','Move locking','hard'],['lights','💡','Lights Out','Linear algebra','hard'],
 ];
 const DIFFICULTY={easy:{label:'EASY',points:10},medium:{label:'MEDIUM',points:15},hard:{label:'HARD',points:20}};
 function gameMeta(){return GAMES.find(g=>g[0]===current)||GAMES[0]}
@@ -336,12 +336,6 @@ function lightsMath(){const sol=solveLights(state.grid);math('Lights Out and lin
 ],'Binary states + local interactions often turn a puzzle into linear algebra over modulo 2.')}
 
 /* DOTS & BOXES 2x2 with exhaustive minimax */
-function startDots(){state={h:[false,false,false,false,false,false],v:[false,false,false,false,false,false],owners:[null,null,null,null],turn:'human',over:false,hmemo:new Map()};
- header('🔵 Dots & Boxes','2×2 board. Draw an edge; complete a box and you get another turn. Most boxes wins.',
- `<div id="dotsBoard" class="dots-grid"></div><div class="center">You: <b id="dYou">0</b> • Machine: <b id="dMac">0</b></div>
- ${btns([B('🧠 Show the math','dotsMath','secondary'),B('↻ New board','startDots','secondary')])}<div id="msg" class="notice">Your turn. Click an edge.</div>`);
- drawDots();
-}
 function edgeIndexH(r,c){return r*3+c} // r 0..2,c 0..1 => 0..5
 function edgeIndexV(r,c){return 6+r*2+c} // r 0..1,c 0..2 => 6..11, but arrays need 12
 function startDots(){state={h:Array(6).fill(false),v:Array(6).fill(false),owners:Array(4).fill(null),turn:'human',over:false,memo:new Map()};
