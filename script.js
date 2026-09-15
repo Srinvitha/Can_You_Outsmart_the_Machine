@@ -440,21 +440,42 @@ function solveTarget(nums,target){
  return null;
 }
 
-/* BULLS */
+/* BULLS & COWS - ONE LIE */
 function rand4(){return String(Math.floor(1000+Math.random()*9000)).split('').map(Number)}
-function bullFeedback(g,s){let bull=0,cg={},cs={};for(let i=0;i<4;i++){if(g[i]===s[i])bull++;else{cg[g[i]]=(cg[g[i]]||0)+1;cs[s[i]]=(cs[s[i]]||0)+1}}let cow=0;for(const k in cg)cow+=Math.min(cg[k],cs[k]||0);return [bull,cow]}
-function startBulls(){state={secret:rand4(),tries:0,over:false};
- header('🐂 Bulls & Cows','Guess the machine’s 4-digit number. A bull is correct digit + position; a cow is correct digit, wrong position.',
- `<div class="big">_ _ _ _</div><input id="bullInput" inputmode="numeric" maxlength="4" placeholder="Four digits">
- ${btns([B('GUESS','bullGuess'),B('🧠 Show the math','bullMath','secondary'),B('↻ New number','startBulls','secondary')])}<table class="small-table"><thead><tr><th>Guess</th><th>Bulls</th><th>Cows</th></tr></thead><tbody id="bullHist"></tbody></table><div id="msg" class="notice">You have 15 attempts.</div>`);
+function bullFeedback(guess,secret){let bulls=0,guessCounts={},secretCounts={};for(let i=0;i<4;i++){if(guess[i]===secret[i])bulls++;else{guessCounts[guess[i]]=(guessCounts[guess[i]]||0)+1;secretCounts[secret[i]]=(secretCounts[secret[i]]||0)+1}}let cows=0;for(const digit in guessCounts)cows+=Math.min(guessCounts[digit],secretCounts[digit]||0);return [bulls,cows]}
+function makeLie([bulls,cows]){if(cows>0)return [bulls+1,cows-1];if(bulls>0)return [bulls-1,cows+1];return [1,0]}
+function startBulls(){
+ state={secret:rand4(),tries:0,maxTries:15,over:false,lieTurn:3+Math.floor(Math.random()*7),lied:false,history:[],inputLocked:false};
+ header('🐂 Bulls & Cows — One Lie','Crack the machine’s 4-digit number. Exactly ONE feedback result is false, but the secret still follows the standard duplicate-aware rules.',
+ `<div class="logic-hero"><div class="logic-chip">🐂 Bull = digit + position</div><div class="logic-chip">🐄 Cow = digit, wrong position</div><div class="logic-chip danger">⚠️ ONE LIE</div></div><div class="big">_ _ _ _</div><div class="input-row"><input id="bullInput" inputmode="numeric" maxlength="4" placeholder="Enter 4 digits" autocomplete="off"><button class="btn" onclick="bullGuess()">GUESS</button></div>
+ ${btns([B('🧠 Show the math','bullMath','secondary'),B('↻ New number','startBulls','secondary')])}<div id="msg" class="notice">You have <b>15 guesses</b>. One feedback result will be deliberately false.</div><div class="bull-progress"><div class="bull-progress-head"><span>Guess history</span><span id="bullCount">0 / 15</span></div><div class="bull-history" id="bullHist"></div></div>`);
 }
-function bullGuess(){if(state.over)return;const x=document.getElementById('bullInput').value.trim();if(!/^\d{4}$/.test(x)){notice('Enter exactly four digits.','warn');return}const g=x.split('').map(Number),[b,c]=bullFeedback(g,state.secret);state.tries++;document.getElementById('bullHist').insertAdjacentHTML('beforeend',`<tr><td>${x}</td><td>${b}</td><td>${c}</td></tr>`);if(b===4){state.over=true;notice(`🏆 <b>CODE CRACKED</b> in ${state.tries} guesses!`,'good');saveWin('You cracked Bulls & Cows',1.4);return}if(state.tries>=15){state.over=true;notice(`🤖 <b>MACHINE WINS.</b> It was ${state.secret.join('')}.`,'bad');return}notice(`<b>${b} bull${b!==1?'s':''}</b>, <b>${c} cow${c!==1?'s':''}</b>. ${15-state.tries} guesses left.`);document.getElementById('bullInput').value=''}
-function bullMath(){math('Bulls & Cows = information','Each result shrinks the set of possible secret numbers.',[
-'A bull fixes both a digit and its position.',
-'A cow proves the digit exists but cannot be in that position.',
-'<div class="formula">guess → feedback → eliminate impossible numbers → repeat</div>',
-'If digits can repeat, frequency counts matter too. This is the same general reasoning behind Mastermind.'
-],'A good guess is not only one you hope is correct; it is one that gives you useful information if it is wrong.')}
+function bullGuess(){
+ if(state.over||state.inputLocked)return;
+ const input=document.getElementById('bullInput'),value=input.value.trim();
+ if(!/^\d{4}$/.test(value)){notice('Enter exactly four digits.','warn');return}
+ const guess=value.split('').map(Number),[trueBulls,trueCows]=bullFeedback(guess,state.secret);state.tries++;
+ if(trueBulls===4){state.history.push({guess:value,trueBulls,trueCows,shownBulls:4,shownCows:0,lie:false});renderBullHistory();state.over=true;notice(`🏆 <b>CODE CRACKED!</b> You found ${value} in ${state.tries} guess${state.tries===1?'':'es'}. The lie was not needed.`,'good');saveWin('You cracked Bulls & Cows — One Lie',1.55);return}
+ let shownBulls=trueBulls,shownCows=trueCows,lie=false;
+ if(state.tries===state.lieTurn){[shownBulls,shownCows]=makeLie([trueBulls,trueCows]);lie=true;state.lied=true}
+ state.history.push({guess:value,trueBulls,trueCows,shownBulls,shownCows,lie});renderBullHistory();input.value='';input.focus();
+ if(state.tries>=state.maxTries){state.over=true;state.inputLocked=true;notice(`🤖 <b>MACHINE WINS.</b> The 15-guess limit is reached. It was <b>${state.secret.join('')}</b>. I’ll now audit every result and reveal the single lie.`,'bad');setTimeout(revealBullLie,450);return}
+ const left=state.maxTries-state.tries;notice(`<b>${shownBulls} bull${shownBulls===1?'':'s'}</b>, <b>${shownCows} cow${shownCows===1?'':'s'}</b>. ${left} guess${left===1?'':'es'} left.`)
+}
+function renderBullHistory(){const history=document.getElementById('bullHist'),count=document.getElementById('bullCount');if(!history)return;history.innerHTML=state.history.map((entry,index)=>`<div class="bull-row ${entry.lie?'suspect':''}"><span class="bull-guess"><b>#${index+1}</b> ${entry.guess}</span><span>🐂 ${entry.shownBulls}</span><span>🐄 ${entry.shownCows}</span>${entry.lie?'<span class="lie-mark">?</span>':''}</div>`).join('');if(count)count.textContent=`${state.tries} / ${state.maxTries}`}
+function revealBullLie(){
+ const lie=state.history.find(entry=>entry.lie);if(!lie)return;
+ const old=document.getElementById('bullLieReveal');if(old)old.remove();
+ const wrapper=document.createElement('div');wrapper.id='bullLieReveal';wrapper.className='lie-reveal';
+ wrapper.innerHTML=`<div class="lie-reveal-head"><span>🤖 MACHINE DEBRIEF</span><b>ONE LIE DETECTED</b></div><h3>Guess #${state.history.indexOf(lie)+1}: <span>${lie.guess}</span></h3><div class="lie-compare"><div><small>MACHINE SAID</small><strong>🐂 ${lie.shownBulls} &nbsp; 🐄 ${lie.shownCows}</strong></div><div><small>ACTUAL RESULT</small><strong>🐂 ${lie.trueBulls} &nbsp; 🐄 ${lie.trueCows}</strong></div></div><p><b>Why I know this was the lie:</b> The secret is <b>${state.secret.join('')}</b>. Recomputing every previous guess with the standard rules shows that this row is the only transmitted result that differs.</p><div class="formula">Secret ${state.secret.join('')} + Guess ${lie.guess} → ${lie.trueBulls} Bulls + ${lie.trueCows} Cows ≠ transmitted ${lie.shownBulls} Bulls + ${lie.shownCows} Cows</div><div class="lie-audit"><b>Full audit</b>${state.history.map((entry,index)=>`<div><span>#${index+1} ${entry.guess}</span><span>${entry.trueBulls}B / ${entry.trueCows}C ${entry.lie?'← ❌ THE LIE':'← ✓ truthful'}</span></div>`).join('')}</div>`;
+ document.querySelector('.game-area').appendChild(wrapper);wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function bullMath(){math('Bulls & Cows: one corrupted clue','The machine follows normal duplicate-aware Bulls/Cows rules for every guess except one preselected feedback record.',[
+ '<b>Bull:</b> the guessed digit matches the secret digit at the same position.',
+ '<b>Cow:</b> the digit exists in the secret but is in a different position. Exact matches are removed before frequency overlap is counted.',
+ '<div class="formula">True feedback = exact-position matches + remaining frequency overlap</div>',
+ 'The lie is selected before play and stored internally. When all 15 guesses are used, the machine recomputes every result from the revealed secret and proves that only one row differs.'
+],'Do not trust every clue equally: one result is guaranteed to be corrupted, but the secret and all other feedback remain mathematically consistent.')}
 
 /* WYTHOFF */
 function startWythoff(){state={a:8,b:13,over:false};
