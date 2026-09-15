@@ -1,6 +1,6 @@
 const GAMES=[
  ['twentyfour','🔢','24 Game','Arithmetic','easy'],['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['grinder','⚙️','Target Grinder','Reverse arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'],
- ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','medium'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','medium'],['greenred','🟢','Green–Yellow–Red','Strategy','medium'],
+ ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['symbiotic','🧬','Symbiotic Feedback','Adaptive game theory','medium'],['parity','⚖️','Parity-Shift Wythoff','Positional strategy','medium'],['inertia','⚡','Inertia Engine','Dynamic strategy','medium'],['decay','🧬','Fibonacci Decay','Move locking','medium'],
  ['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],['wythoff','♜','Wythoff’s Game','Number theory','hard'],
 ];
 const DIFFICULTY={easy:{label:'EASY',points:10},medium:{label:'MEDIUM',points:15},hard:{label:'HARD',points:20}};
@@ -511,67 +511,30 @@ function grinderReveal(){if(state.over)return;const sequence=grinderPuzzle.solut
 function grinderMath(){const solution=grinderPuzzle.solutionOrder.map(index=>grinderPuzzle.slots[index]);let value=grinderPuzzle.initial;const steps=[String(value)];for(const op of solution){if(op.type==='DIV')value/=op.value;else if(op.type==='SUB')value-=op.value;else value+=op.value;steps.push(`${op.label} = ${value}`)}math('Target Grinder = reverse arithmetic','The puzzle is generated backwards from 1, which guarantees that one ordering reaches the destination exactly.',[`Starting target: <b>${grinderPuzzle.initial}</b>`,'Use all four modules exactly once.',`Correct execution path: <div class="formula">${steps.join(' → ')}</div>`,'Division is legal only when the current value is divisible by the module value.','The challenge is finding the correct order of transformations.'],'Think backwards: ask what operation could have produced the current value, then choose the module that makes the next step clean.')}
 function finishGrinderRound(){if(state.tick)clearInterval(state.tick);const finalScore=score;let name='Player';try{const entered=window.prompt(`🏆 Target Grinder round complete!\nFinal score: ${finalScore}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}let board=[];try{board=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]')}catch(e){}board.push({name,score:finalScore,game:'Target Grinder',difficulty:'EASY',time:Date.now()});board.sort((a,b)=>b.score-a.score);try{localStorage.setItem('aptusMachineBoard',JSON.stringify(board.slice(0,10)))}catch(e){}renderBoard();notice(`🏆 <b>Round complete!</b> Final score: ${finalScore}.`,'good')}
 
-/* GREEN–YELLOW–RED custom strategic game */
-function greenStateWin(n,turn,memo){
- // Exact dynamic-programming solver for this custom finite game.
- // n = tokens remaining; turn = 'human' or 'machine'.
- // A player who makes n=0 loses (they took the final Red token).
- if(n===0)return false;
- const key=n+'|'+turn;if(memo.has(key))return memo.get(key);
- for(let k=1;k<=Math.min(3,n);k++){
-   const rem=n-k;
-   if(rem===0)continue; // taking Red immediately loses
-   const nextTurn=(rem%5===0)?turn:(turn==='human'?'machine':'human');
-   if(!greenStateWin(rem,nextTurn,memo)){memo.set(key,true);return true}
- }
- memo.set(key,false);return false;
-}
-function greenBestMachine(n,memo){
- for(let k=1;k<=Math.min(3,n);k++){
-   const rem=n-k;if(rem===0)continue;
-   const nextTurn=(rem%5===0)?'machine':'human';
-   if(!greenStateWin(rem,nextTurn,memo))return k;
- }
- return Math.min(1,n);
-}
-function startGreen(){state={n:15,over:false,memo:new Map()};
- header('🟢 Green–Yellow–Red','A custom Aptus Gana strategy game. Take 1–3 tokens. Landing on Yellow gives a bonus turn; taking the final Red token loses.',
- `<div class="big" id="gry">15</div><div class="center muted">Green = normal turn • Yellow = bonus turn • Red = final token and instant loss.</div>
- <div class="choice-row" style="justify-content:center;margin-top:14px">${[1,2,3].map(k=>`<button class="choice" onclick="greenMove(${k})">Take ${k}</button>`).join('')}</div>
- ${btns([B('🧠 Show the math','greenMath','secondary'),B('↻ New game','startGreen','secondary')])}<div id="msg" class="notice">The machine has solved the finite game tree.</div>`);
-}
-function greenMove(k){
- if(state.over||k>state.n)return;
- state.n-=k;drawGreen();
- if(state.n===0){state.over=true;notice('🤖 <b>MACHINE WINS.</b> You took the final Red token.','bad');return}
- if(state.n%5===0){notice('🟡 <b>Yellow!</b> Bonus turn — you move again.');return}
- notice('🤖 Machine is searching the exact game tree…');
- setTimeout(()=>{
-   const take=greenBestMachine(state.n,state.memo),rem=state.n-take;
-   if(rem===0){state.over=true;notice('🤖 <b>MACHINE WINS.</b> It avoided taking Red and left you the losing choice.','bad');return}
-   state.n=rem;drawGreen();
-   if(state.n%5===0)notice(`Machine took <b>${take}</b>. 🟡 Yellow gives the machine another turn.`);
-   else notice(`Machine took <b>${take}</b>. Your turn.`);
-   if(state.n>0&&state.n%5===0)setTimeout(()=>greenMachineBonus(),320);
- },380);
-}
-function greenMachineBonus(){
- if(state.over)return;
- const take=greenBestMachine(state.n,state.memo),rem=state.n-take;
- if(rem===0){state.over=true;notice('🤖 <b>MACHINE WINS.</b> It has forced the final Red token onto you.','bad');return}
- state.n=rem;drawGreen();
- if(state.n%5===0){notice(`🤖 Machine took <b>${take}</b> and landed on Yellow again. It gets another turn.`);setTimeout(greenMachineBonus,320)}
- else notice(`🤖 Machine took <b>${take}</b>. Your turn.`);
-}
-function drawGreen(){document.getElementById('gry').textContent=state.n}
-function greenMath(){const memo=new Map();const winning=greenStateWin(15,'human',memo);math('Green–Yellow–Red: exact game-tree solving','This is a custom game, so the machine does not use a guessed pattern. It solves the finite state space exactly.',[
-'There are only 15 possible token counts, so the machine can evaluate every future state with dynamic programming.',
-'For each state, it asks: <b>“Is there at least one legal move that gives the opponent a losing state?”</b>',
-'If yes, the state is winning. If every legal move gives the opponent a winning state, it is losing.',
-'<div class="formula">WIN ⇔ ∃ move → LOSS &nbsp;&nbsp;&nbsp; LOSS ⇔ every move → WIN</div>',
-`From 15 tokens with the rules shown, the starting state is <b>${winning?'winning':'losing'}</b> for the player to move under perfect play.`
-],'This is the same core idea used by many optimal-game algorithms: solve the states from the end backwards instead of relying on intuition.')}
+/* INERTIA ENGINE */
+const INERTIA_TOTAL=31,INERTIA_MIN=2,INERTIA_MAX=5,INERTIA_YELLOW=new Set([7,14,21]);
+function inertiaMoves(pos,inertia){const moves=[];for(let value=inertia-1;value<=inertia+1;value++)if(value>=INERTIA_MIN&&value<=INERTIA_MAX)moves.push(value);return moves}
+function inertiaWin(pos,inertia,memo=new Map()){if(pos>=INERTIA_TOTAL-1)return false;const key=`${pos}|${inertia}`;if(memo.has(key))return memo.get(key);for(const value of inertiaMoves(pos,inertia)){const next=pos+value;if(next>=INERTIA_TOTAL-1)continue;const child=inertiaWin(next,value,memo),sameTurn=INERTIA_YELLOW.has(next);if(sameTurn?child:!child){memo.set(key,true);return true}}memo.set(key,false);return false}
+function inertiaBestMove(pos,inertia,memo){for(const value of inertiaMoves(pos,inertia)){const next=pos+value;if(next>=INERTIA_TOTAL-1)continue;const child=inertiaWin(next,value,memo),sameTurn=INERTIA_YELLOW.has(next);if(sameTurn?child:!child)return value}return inertiaMoves(pos,inertia)[0]||INERTIA_MIN}
+function startInertia(){state={pos:0,inertia:3,turn:'human',over:false,memo:new Map(),aiTimer:null};header('⚡ Inertia Engine','Your previous velocity controls the next move window. Reach Red and you lose.',`<div class="engine-rules inertia-rules"><div class="engine-rule-title">Dynamic velocity</div><div class="engine-rule-grid"><div><b>1</b><span>Choose velocity ±1.</span></div><div><b>2</b><span>Velocity stays between 2 and 5.</span></div><div><b>3</b><span>Yellow gives a chain turn.</span></div><div><b>4</b><span>Red loses immediately.</span></div></div><div class="engine-formula">Allowed next steps = {v−1, v, v+1} ∩ {2,3,4,5}</div></div><div class="engine-dashboard"><div class="engine-stat"><span>Position</span><b id="inertiaPos">0</b></div><div class="engine-stat"><span>Current velocity</span><b id="inertiaVel">3</b></div><div class="engine-stat"><span>Distance to Red</span><b id="inertiaRem">30</b></div><div class="engine-stat accent"><span>Next options</span><b id="inertiaOptions">2, 3, 4</b></div></div><div class="engine-track-wrap"><div class="engine-track" id="inertiaTrack"></div></div><div class="engine-control-card"><div class="engine-turn" id="inertiaTurn">YOUR TURN</div><div class="engine-prompt">Choose your next velocity.</div><div class="engine-moves" id="inertiaMoves"></div></div>${btns([B('🧠 Show the math','inertiaMath','secondary'),B('↻ New engine run','startInertia','secondary')])}<div id="msg" class="notice">The machine uses exact finite-state game-tree analysis.</div>`);renderInertia()}
+function inertiaMove(value){if(state.over||state.turn!=='human'||!inertiaMoves(state.pos,state.inertia).includes(value))return;inertiaApply(value,'human');if(!state.over&&state.turn==='ai'){renderInertia();state.aiTimer=setTimeout(inertiaAI,480)}}
+function inertiaApply(value,who){state.pos+=value;state.inertia=value;if(state.pos>=INERTIA_TOTAL-1){state.over=true;if(state.aiTimer)clearTimeout(state.aiTimer);renderInertia();if(who==='human')notice('🔴 <b>TRAPPED.</b> You hit Red. The machine wins.','bad');else{notice('🏆 <b>YOU OUTSMARTED IT.</b> The machine was forced onto Red.','good');saveWin('You beat the Inertia Engine',1)}return}if(INERTIA_YELLOW.has(state.pos)){state.turn=who==='human'?'human':'ai';notice(`🟡 <b>Yellow ${state.pos}.</b> ${who==='human'?'You':'Machine'} keep the turn.`,'warn')}else{state.turn=who==='human'?'ai':'human'}}
+function inertiaAI(){if(state.over||state.turn!=='ai')return;const value=inertiaBestMove(state.pos,state.inertia,state.memo);inertiaApply(value,'ai');if(!state.over&&state.turn==='ai')setTimeout(inertiaAI,420);renderInertia();if(!state.over&&state.turn==='human')notice(`🤖 Machine chose <b>+${value}</b>. Your legal range is <b>${inertiaMoves(state.pos,state.inertia).join(', ')}</b>.`)}
+function renderInertia(){const track=document.getElementById('inertiaTrack');if(!track)return;document.getElementById('inertiaPos').textContent=state.pos;document.getElementById('inertiaVel').textContent=state.inertia;document.getElementById('inertiaRem').textContent=Math.max(0,INERTIA_TOTAL-1-state.pos);document.getElementById('inertiaOptions').textContent=inertiaMoves(state.pos,state.inertia).join(', ')||'—';const turn=document.getElementById('inertiaTurn');turn.textContent=state.over?'ENGINE HALTED':state.turn==='human'?'YOUR TURN':'MACHINE THINKING';turn.className='engine-turn '+(state.turn==='human'?'human':'machine');track.innerHTML='';for(let index=0;index<INERTIA_TOTAL;index++){const node=document.createElement('div');const code=index===INERTIA_TOTAL-1?'R':INERTIA_YELLOW.has(index)?'Y':'G';node.className=`engine-node ${code} ${index<state.pos?'passed':''} ${index===state.pos?'current':''}`;node.textContent=index;track.appendChild(node)}const wrapper=document.getElementById('inertiaMoves');wrapper.innerHTML='';inertiaMoves(state.pos,state.inertia).forEach(value=>{const button=document.createElement('button');button.className='engine-move-btn';button.textContent=`+${value}`;button.disabled=state.over||state.turn!=='human';button.onclick=()=>inertiaMove(value);wrapper.appendChild(button)})}
+function inertiaMath(){const memo=new Map(),winning=inertiaWin(0,3,memo);math('Inertia Engine: velocity is part of the state','The machine tracks both position and velocity, while Yellow changes who moves next.',[`<div class="formula">Next velocity ∈ {v−1, v, v+1} ∩ {2,3,4,5}</div>`,'A normal cell passes the turn. A Yellow cell lets the same player move again.','For every state (position, velocity), the solver checks each legal next velocity.','Landing on Red is an immediate loss.',`From (0, 3), the starting state is <b>${winning?'winning':'losing'}</b>; the solver evaluated ${memo.size} states.`],'Track position and velocity together. A small move can create a much worse future move window.')}
+
+/* FIBONACCI DECAY / STATIC LOCK ENGINE */
+const DECAY_TOTAL=31,DECAY_MIN=2,DECAY_MAX=5,DECAY_YELLOW=new Set([5,11,17,23]);
+function decayMoves(pos,banned){const moves=[];for(let value=DECAY_MIN;value<=DECAY_MAX;value++)if(value!==banned)moves.push(value);return moves}
+function decayWin(pos,banned,memo=new Map()){if(pos>=DECAY_TOTAL-1)return false;const key=`${pos}|${banned??0}`;if(memo.has(key))return memo.get(key);for(const value of decayMoves(pos,banned)){const next=pos+value;if(next>=DECAY_TOTAL-1)continue;const child=decayWin(next,value,memo),sameTurn=DECAY_YELLOW.has(next);if(sameTurn?child:!child){memo.set(key,true);return true}}memo.set(key,false);return false}
+function decayBestMove(pos,banned,memo){for(const value of decayMoves(pos,banned)){const next=pos+value;if(next>=DECAY_TOTAL-1)continue;const child=decayWin(next,value,memo),sameTurn=DECAY_YELLOW.has(next);if(sameTurn?child:!child)return value}return decayMoves(pos,banned)[0]||DECAY_MIN}
+function startDecay(){state={pos:0,banned:null,turn:'human',over:false,memo:new Map(),aiTimer:null};header('🧬 Fibonacci Decay','Each move locks that same number for the opponent. Yellow keeps the turn; Red ends the game.',`<div class="engine-rules decay-rules"><div class="engine-rule-title">Static lock system</div><div class="engine-rule-grid"><div><b>1</b><span>Choose a step from 2–5.</span></div><div><b>2</b><span>Your step becomes locked.</span></div><div><b>3</b><span>The opponent cannot repeat it.</span></div><div><b>4</b><span>Yellow preserves the turn.</span></div></div><div class="engine-formula">Legal moves = {2,3,4,5} − {locked step}</div></div><div class="engine-dashboard"><div class="engine-stat"><span>Position</span><b id="decayPos">0</b></div><div class="engine-stat danger"><span>Locked step</span><b id="decayLock">None</b></div><div class="engine-stat"><span>Distance to Red</span><b id="decayRem">30</b></div><div class="engine-stat accent"><span>Legal now</span><b id="decayOptions">2, 3, 4, 5</b></div></div><div class="engine-track-wrap"><div class="engine-track" id="decayTrack"></div></div><div class="engine-control-card"><div class="engine-turn" id="decayTurn">YOUR TURN</div><div class="engine-prompt">Pick a step. That number locks for the next decision.</div><div class="engine-moves" id="decayMoves"></div></div>${btns([B('🧠 Show the math','decayMath','secondary'),B('↻ New engine run','startDecay','secondary')])}<div id="msg" class="notice">The machine uses exact finite-state game-tree analysis.</div>`);renderDecay()}
+function decayMove(value){if(state.over||state.turn!=='human'||!decayMoves(state.pos,state.banned).includes(value))return;decayApply(value,'human');if(!state.over&&state.turn==='ai'){renderDecay();state.aiTimer=setTimeout(decayAI,500)}}
+function decayApply(value,who){state.pos+=value;state.banned=value;if(state.pos>=DECAY_TOTAL-1){state.over=true;if(state.aiTimer)clearTimeout(state.aiTimer);renderDecay();if(who==='human')notice('🔴 <b>LOCKED INTO RED.</b> The machine wins.','bad');else{notice('🏆 <b>YOU OUTSMARTED IT.</b> The machine was forced onto Red.','good');saveWin('You beat Fibonacci Decay',1)}return}if(DECAY_YELLOW.has(state.pos)){state.turn=who==='human'?'human':'ai';notice(`🟡 <b>Yellow ${state.pos}.</b> ${who==='human'?'You':'Machine'} keep the turn.`,'warn')}else state.turn=who==='human'?'ai':'human'}
+function decayAI(){if(state.over||state.turn!=='ai')return;const value=decayBestMove(state.pos,state.banned,state.memo);decayApply(value,'ai');if(!state.over&&state.turn==='ai')setTimeout(decayAI,430);renderDecay();if(!state.over&&state.turn==='human')notice(`🤖 Machine chose <b>+${value}</b>. You cannot choose <b>+${value}</b> now.`)}
+function renderDecay(){const track=document.getElementById('decayTrack');if(!track)return;document.getElementById('decayPos').textContent=state.pos;document.getElementById('decayLock').textContent=state.banned==null?'None':`+${state.banned}`;document.getElementById('decayRem').textContent=Math.max(0,DECAY_TOTAL-1-state.pos);document.getElementById('decayOptions').textContent=decayMoves(state.pos,state.banned).join(', ')||'—';const turn=document.getElementById('decayTurn');turn.textContent=state.over?'ENGINE HALTED':state.turn==='human'?'YOUR TURN':'MACHINE THINKING';turn.className='engine-turn '+(state.turn==='human'?'human':'machine');track.innerHTML='';for(let index=0;index<DECAY_TOTAL;index++){const node=document.createElement('div');const code=index===DECAY_TOTAL-1?'R':DECAY_YELLOW.has(index)?'Y':'G';node.className=`engine-node ${code} ${index<state.pos?'passed':''} ${index===state.pos?'current':''}`;node.textContent=index;track.appendChild(node)}const wrapper=document.getElementById('decayMoves');wrapper.innerHTML='';for(let value=DECAY_MIN;value<=DECAY_MAX;value++){const button=document.createElement('button');button.className='engine-move-btn';button.textContent=`+${value}`;button.disabled=state.over||state.turn!=='human'||value===state.banned;button.classList.toggle('locked',value===state.banned);button.onclick=()=>decayMove(value);wrapper.appendChild(button)}}
+function decayMath(){const memo=new Map(),winning=decayWin(0,null,memo);math('Fibonacci Decay: move locking changes the state','The same position can be winning or losing depending on which step is forbidden.',[`<div class="formula">Legal moves = {2,3,4,5} − {locked step}</div>`,'Choosing +4 locks +4 for the opponent. Yellow keeps the turn, but the lock still carries into the next decision.','The solver represents (position, locked step), not just distance to Red.','Landing on Red loses immediately.',`From (0, no lock), the starting state is <b>${winning?'winning':'losing'}</b>; the solver evaluated ${memo.size} states.`],'Track where you land and which move value you ban next.')}
 
 /* start */
-function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,symbiotic:startSymbiotic,parity:startParity,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,operator:startOperatorNetwork,bulls:startBulls,wythoff:startWythoff,grinder:startGrinder,greenred:startGreen};map[current]();setScore(0)}
+function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,symbiotic:startSymbiotic,parity:startParity,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,operator:startOperatorNetwork,bulls:startBulls,wythoff:startWythoff,grinder:startGrinder,inertia:startInertia,decay:startDecay};map[current]();setScore(0)}
 renderBoard();start();
