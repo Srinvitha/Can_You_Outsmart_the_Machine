@@ -1,5 +1,5 @@
 const GAMES=[
- ['twentyfour','🔢','24 Game','Arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'], ['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['countdown','⏱️','Countdown Numbers','Search','easy'],
+ ['twentyfour','🔢','24 Game','Arithmetic','easy'],['pattern','🧩','Pattern Duel','Sequences','easy'],['guess','🔮','Number Hunt','Binary search','easy'],['operator','⛓️','Operator Network','Arithmetic','easy'],['grinder','⚙️','Target Grinder','Reverse arithmetic','easy'],['monty','🚪','Monty Hall','Probability','easy'],
  ['bulls','🐂','Bulls & Cows','Logic','medium'],['mastermind','🕵️','Mastermind','Deduction','medium'],['nim','🥢','Nim','Game theory','medium'],['optimal','♟️','Optimal Move','Minimax','medium'],['greenred','🟢','Green–Yellow–Red','Strategy','medium'],
  ['dots','🔵','Dots & Boxes','Game theory','hard'],['lights','💡','Lights Out','Linear algebra','hard'],['wythoff','♜','Wythoff’s Game','Number theory','hard'],
 ];
@@ -465,22 +465,63 @@ function wythMath(){math('Wythoff’s Game and the golden ratio','The losing (�
 'The machine tries to move you into one of these positions. If you are already in one, the position is mathematically losing under perfect play.'
 ],'Look for invariant positions: states where every legal move hands the opponent an advantage.')}
 
-/* COUNTDOWN */
-function startCountdown(){state={nums:[25,50,3,6,7,8],target:427,over:false,t0:Date.now()};
- header('⏱️ Countdown Numbers','Use the six numbers and + − × ÷ to get as close as possible to the target. You have 60 seconds.',
- `<div class="cards">${state.nums.map(n=>`<div class="card-num">${n}</div>`).join('')}<div class="card-num" style="background:#eff6ff">→ ${state.target}</div></div>
- <div class="big" id="countTimer">60</div><input id="countExpr" type="text" placeholder="Your expression">
- ${btns([B('SUBMIT','checkCountdown'),B('🧠 Show the machine search','countMath','secondary'),B('↻ Restart','startCountdown','secondary')])}<div id="msg" class="notice">The machine is searching while you think.</div>`);
- state.t0=Date.now();state.tick=setInterval(()=>{if(state.over)return;const left=Math.max(0,60-Math.floor((Date.now()-state.t0)/1000));const e=document.getElementById('countTimer');if(e)e.textContent=left;if(left===0){state.over=true;notice('⏰ <b>TIME!</b>','bad');clearInterval(state.tick)}},250)
+/* TARGET GRINDER */
+const GRINDER_OPS=['DIV','SUB','ADD'];
+let grinderPuzzle={initial:1,slots:[],solutionOrder:[],target:1};
+let grinderMoves=[];
+let grinderSolved=0;
+function grinderRandomInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function generateGrinderPuzzle(){
+ let value=1;
+ const reverseOps=[];
+ for(let i=0;i<4;i++){
+  const choice=grinderRandomInt(0,2);
+  if(choice===0){const multiplier=grinderRandomInt(2,5);value*=multiplier;reverseOps.push({type:'DIV',value:multiplier,label:`÷${multiplier}`})}
+  else if(choice===1){const adder=grinderRandomInt(5,18);value+=adder;reverseOps.push({type:'SUB',value:adder,label:`−${adder}`})}
+  else if(value>15){const subtractor=grinderRandomInt(4,14);value-=subtractor;reverseOps.push({type:'ADD',value:subtractor,label:`+${subtractor}`})}
+  else{const adder=grinderRandomInt(6,16);value+=adder;reverseOps.push({type:'SUB',value:adder,label:`−${adder}`})}
+ }
+ const shuffled=reverseOps.map((op,index)=>({op,originalIndex:index})).sort(()=>Math.random()-.5);
+ const solutionOrder=reverseOps.slice().reverse().map(op=>shuffled.findIndex(item=>item.originalIndex===reverseOps.indexOf(op)));
+ grinderPuzzle={initial:value,slots:shuffled.map(item=>item.op),solutionOrder,target:1};
+ grinderMoves=[];
 }
-function evalExprAllowed(e,nums){if(!/^[0-9+\-*/().\s]+$/.test(e))return null;const used=(e.match(/\d+/g)||[]).map(Number),avail=nums.slice();for(const x of used){const i=avail.indexOf(x);if(i<0)return null;avail.splice(i,1)}return safeEvaluate(e)}
-function checkCountdown(){if(state.over)return;const e=document.getElementById('countExpr').value.trim(),v=evalExprAllowed(e,state.nums);if(v===null){notice('Invalid expression or number reuse.','warn');return}const diff=Math.abs(v-state.target);state.over=true;clearInterval(state.tick);if(diff===0){notice(`🏆 <b>EXACT!</b> ${v}.`,'good');saveWin('You won Countdown Numbers',1.5)}else{notice(`You reached <b>${v}</b> — ${diff} away from ${state.target}.`,'warn');if(diff<=5)saveWin('You nearly beat Countdown',.5)}}
-function countMath(){const s=solveTarget(state.nums,state.target);math('Countdown = exhaustive search','The machine can explore combinations faster than a human, but the search is still mathematical.',[
-`Target: <b>${state.target}</b>; numbers: <b>${state.nums.join(', ')}</b>.`,
-`The search recursively chooses two available values, applies each legal operation, and replaces them with the result.`,
-`One exact solution found by the search: <div class="formula">${s||'No exact solution — the machine would optimize for the smallest distance.'}</div>`,
-'For a full Countdown solver, you can also keep the closest result instead of stopping at exact 427.'
-],'Humans are good at spotting structure; machines are good at checking huge numbers of combinations quickly.')}
+function startGrinder(){
+ if(state.tick)clearInterval(state.tick);
+ state={over:false,tick:null,grinderTime:60};score=0;grinderSolved=0;generateGrinderPuzzle();
+ header('⚙️ Target Grinder','Start with a generated value and grind it down to exactly 1. Use every module once — order matters.',
+ `<div class="grinder-display"><div class="grinder-current" id="grinderValue">${grinderPuzzle.initial}</div><div class="grinder-goal">Target destination: <b>1</b></div></div>
+ <div class="grinder-timer" id="grinderTimer">⏱️ 60s</div><div class="grinder-slots" id="grinderSlots"></div>
+ <div class="grinder-history" id="grinderHistory">Processing Stream: <span>Awaiting reduction input...</span></div>
+ ${btns([B('💡 Show solution','grinderReveal','secondary'),B('↩ Reset sequence','resetGrinderAttempt','secondary'),B('🧠 Show the math','grinderMath','secondary'),B('↻ Restart round','startGrinder','secondary')])}
+ <div id="msg" class="notice">Use every module exactly once. Division must produce a whole number.</div>`);
+ renderGrinder();runGrinderClock();
+}
+function runGrinderClock(){
+ if(state.tick)clearInterval(state.tick);
+ state.tick=setInterval(()=>{if(state.over)return;state.grinderTime--;const timer=document.getElementById('grinderTimer');if(timer)timer.textContent=`⏱️ ${state.grinderTime}s`;if(timer&&state.grinderTime<=15)timer.classList.add('warn');if(state.grinderTime<=0){clearInterval(state.tick);state.over=true;notice('⏰ <b>TIME!</b> The target escaped the grinder.','bad')}},1000);
+}
+function resetGrinderAttempt(){if(state.over)return;grinderMoves=[];renderGrinder();notice('↩ Sequence reset. Try a different order.')}
+function processGrinder(index){
+ if(state.over||grinderMoves.includes(index))return;
+ const op=grinderPuzzle.slots[index],valueBefore=grinderValueAfterMoves();let value=valueBefore;
+ if(op.type==='DIV'){if(value%op.value!==0){notice(`💥 <b>Processing crash!</b> ${value} cannot be divided cleanly by ${op.value}.`,'warn');return}value/=op.value}
+ else if(op.type==='SUB')value-=op.value;else value+=op.value;
+ grinderMoves.push(index);renderGrinder(true,value);
+ if(grinderMoves.length!==grinderPuzzle.slots.length)return;
+ if(value===1){state.over=true;clearInterval(state.tick);grinderSolved++;score=Math.min(difficultyPoints(),score+2);setScore(score);notice(score>=difficultyPoints()?`🏆 <b>Target fully ground!</b> You reached ${difficultyPoints()} points.`:`🏆 <b>Perfect grind!</b> +2 points. ${difficultyPoints()-score} points to go.`,'good');if(score>=difficultyPoints())setTimeout(finishGrinderRound,700);else setTimeout(()=>{if(state.over){state.over=false;generateGrinderPuzzle();renderGrinder()}},700)}
+ else notice(`❌ All modules used, but the final value is <b>${value}</b>. Reset and try another order.`,'bad');
+}
+function grinderValueAfterMoves(){let value=grinderPuzzle.initial;for(const index of grinderMoves){const op=grinderPuzzle.slots[index];if(op.type==='DIV')value=value%op.value===0?value/op.value:value;else if(op.type==='SUB')value-=op.value;else value+=op.value}return value}
+function renderGrinder(updateValue=true,currentValue=null){
+ const wrapper=document.getElementById('grinderSlots');if(!wrapper)return;wrapper.innerHTML='';
+ grinderPuzzle.slots.forEach((op,index)=>{const btn=document.createElement('button');btn.className='btn-grind';btn.textContent=op.label;btn.disabled=state.over||grinderMoves.includes(index);btn.onclick=()=>processGrinder(index);wrapper.appendChild(btn)});
+ const value=currentValue===null?grinderValueAfterMoves():currentValue,display=document.getElementById('grinderValue');if(display&&updateValue)display.textContent=value;
+ const history=document.getElementById('grinderHistory');if(history)history.innerHTML=grinderMoves.length?`Processing Stream: <span>${grinderMoves.map(i=>grinderPuzzle.slots[i].label).join(' ➜ ')}</span>`:'Processing Stream: <span>Awaiting reduction input...</span>';
+}
+function grinderReveal(){if(state.over)return;const sequence=grinderPuzzle.solutionOrder.map(index=>grinderPuzzle.slots[index].label).join(' → ');notice(`💡 <b>Machine solution:</b> ${sequence}`)}
+function grinderMath(){const solution=grinderPuzzle.solutionOrder.map(index=>grinderPuzzle.slots[index]);let value=grinderPuzzle.initial;const steps=[String(value)];for(const op of solution){if(op.type==='DIV')value/=op.value;else if(op.type==='SUB')value-=op.value;else value+=op.value;steps.push(`${op.label} = ${value}`)}math('Target Grinder = reverse arithmetic','The puzzle is generated backwards from 1, which guarantees that one ordering reaches the destination exactly.',[`Starting target: <b>${grinderPuzzle.initial}</b>`,'Use all four modules exactly once.',`Correct execution path: <div class="formula">${steps.join(' → ')}</div>`,'Division is legal only when the current value is divisible by the module value.','The challenge is finding the correct order of transformations.'],'Think backwards: ask what operation could have produced the current value, then choose the module that makes the next step clean.')}
+function finishGrinderRound(){if(state.tick)clearInterval(state.tick);const finalScore=score;let name='Player';try{const entered=window.prompt(`🏆 Target Grinder round complete!\nFinal score: ${finalScore}\nEnter your name for the Machine Breakers board:`);if(entered!==null&&entered.trim())name=entered.trim().slice(0,22)}catch(e){}let board=[];try{board=JSON.parse(localStorage.getItem('aptusMachineBoard')||'[]')}catch(e){}board.push({name,score:finalScore,game:'Target Grinder',difficulty:'EASY',time:Date.now()});board.sort((a,b)=>b.score-a.score);try{localStorage.setItem('aptusMachineBoard',JSON.stringify(board.slice(0,10)))}catch(e){}renderBoard();notice(`🏆 <b>Round complete!</b> Final score: ${finalScore}.`,'good')}
 
 /* GREEN–YELLOW–RED custom strategic game */
 function greenStateWin(n,turn,memo){
@@ -544,5 +585,5 @@ function greenMath(){const memo=new Map();const winning=greenStateWin(15,'human'
 ],'This is the same core idea used by many optimal-game algorithms: solve the states from the end backwards instead of relying on intuition.')}
 
 /* start */
-function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,optimal:startOptimal,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,operator:startOperatorNetwork,bulls:startBulls,wythoff:startWythoff,countdown:startCountdown,greenred:startGreen};map[current]();setScore(0)}
+function start(){updateMenu();if(state.tick)clearInterval(state.tick);const map={nim:startNim,twentyfour:start24,guess:startGuess,pattern:startPattern,optimal:startOptimal,mastermind:startMastermind,monty:startMonty,lights:startLights,dots:startDots,operator:startOperatorNetwork,bulls:startBulls,wythoff:startWythoff,grinder:startGrinder,greenred:startGreen};map[current]();setScore(0)}
 renderBoard();start();
